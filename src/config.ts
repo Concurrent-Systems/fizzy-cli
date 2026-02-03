@@ -14,6 +14,7 @@ function findEnvFile(): string | null {
   // Check paths in order of priority
   const paths = [
     join(process.cwd(), '.env'),
+    join(import.meta.dir, '..', '.env'),  // CLI's own directory
     join(homedir(), '.config', 'fizzy', '.env'),
     join(homedir(), '.fizzy', '.env'),
   ];
@@ -68,6 +69,7 @@ export function loadConfig(): Config {
     console.error('');
     console.error('Searched locations:');
     console.error('  - ./.env');
+    console.error('  - ~/g/fizzy-cli/.env');
     console.error('  - ~/.config/fizzy/.env');
     console.error('  - ~/.fizzy/.env');
     process.exit(1);
