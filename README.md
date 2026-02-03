@@ -1,138 +1,95 @@
 # Fizzy CLI
 
-Command-line interface for [Fizzy](https://app.fizzy.do) kanban board management.
+TypeScript CLI for [Fizzy](https://app.fizzy.do) kanban board management.
 
-## Prerequisites
+## Purpose
 
-- [Bun](https://bun.sh) runtime
+**Primary use:** Claude Code skill for AI-assisted Fizzy management via `/fizzy` command.
+
+**Secondary use:** Standalone CLI for manual operations.
+
+The skill definition lives in the [team claude config](https://github.com/Concurrent-Systems/claude) at `skills/fizzy/SKILL.md`.
+
+## Setup
+
+### 1. Install Bun
 
 ```bash
-# Install Bun
 curl -fsSL https://bun.sh/install | bash
 ```
 
-## Installation
+### 2. Clone and install
 
 ```bash
-cd ~/g/fizzy-cli-ts
+cd ~/g
+git clone git@github.com:Concurrent-Systems/fizzy-cli.git
+cd fizzy-cli
 bun install
 ```
 
-## Configuration
-
-Create a `.env` file with your Fizzy API credentials:
+### 3. Configure credentials
 
 ```bash
 cp .env.example .env
-# Edit .env with your token and account ID
+# Edit .env with your FIZZY_API_TOKEN and FIZZY_ACCOUNT_ID
 ```
 
-Or set environment variables:
-```bash
-export FIZZY_API_TOKEN=your_token_here
-export FIZZY_ACCOUNT_ID=6103476
+Get your API token from [Fizzy Profile > API > Personal access tokens](https://app.fizzy.do).
+
+## Claude Code Usage
+
+Once set up, use the `/fizzy` skill in Claude Code:
+
+```
+/fizzy card 374
+/fizzy search "security"
+/fizzy comment 374 "Update from investigation"
 ```
 
-## Usage
+Claude will execute commands and interpret results contextually.
 
-Run via Bun:
-```bash
-bun run src/index.ts --help
-bun run src/index.ts boards
-bun run src/index.ts card 374
-```
+## Standalone CLI Usage
 
-Or build a standalone binary:
 ```bash
-bun run build
-./fizzy --help
+# Via bun (development)
+~/.bun/bin/bun run ~/g/fizzy-cli/src/index.ts <command>
+
+# Examples
+~/.bun/bin/bun run ~/g/fizzy-cli/src/index.ts boards
+~/.bun/bin/bun run ~/g/fizzy-cli/src/index.ts card 374
+~/.bun/bin/bun run ~/g/fizzy-cli/src/index.ts search "keyword"
 ```
 
 ## Commands
 
-### Boards
-```bash
-fizzy boards              # List all boards
-fizzy boards-create NAME  # Create a new board
-fizzy columns BOARD       # List columns on a board
-fizzy columns-add BOARD NAME --color lime
-```
+| Command | Description |
+|---------|-------------|
+| `boards` | List all boards |
+| `card <num>` | View card with comments |
+| `cards` | List cards (with `-b`, `-t` filters) |
+| `search <term>` | Search cards |
+| `cards-create <title> -b <board>` | Create card |
+| `cards-triage <num> <column>` | Move to column |
+| `done <num>` / `reopen <num>` | Close/reopen |
+| `comment <num> <text>` | Add comment (markdown supported) |
+| `steps-add <num> <text>` | Add checklist item |
+| `steps-check <num> <idx>` | Toggle checklist item |
+| `tag <num> <tag>` | Add tag |
+| `assign <num> <user>` | Toggle assignment |
+| `attach <num> <file>` | Attach file |
 
-### Cards
-```bash
-fizzy card 374            # View card with comments
-fizzy card -v 374         # Include comment IDs
-fizzy cards               # List all cards
-fizzy cards -b "Board"    # Filter by board
-fizzy cards -t "bug"      # Filter by tag
-fizzy cards-mine          # My assigned cards
-fizzy search "keyword"    # Search cards
-
-fizzy cards-create "Title" -b "Board" -d "Description"
-fizzy cards-update 374 --title "New Title"
-fizzy cards-delete 374
-fizzy cards-triage 374 "In Progress"  # Move to column
-fizzy cards-triage 374                 # Back to triage
-fizzy done 374            # Close card
-fizzy reopen 374          # Reopen card
-```
-
-### Comments
-```bash
-fizzy comment 374 "Comment text with **markdown**"
-fizzy comments-edit 374 COMMENT_ID "Updated text"
-fizzy comments-delete 374 COMMENT_ID
-```
-
-### Steps (Checklist)
-```bash
-fizzy steps-add 374 "New step"
-fizzy steps-check 374 1           # Toggle step 1
-fizzy steps-check 374 1 --on      # Mark complete
-fizzy steps-check 374 1 --off     # Mark incomplete
-fizzy steps-delete 374 1          # Delete step 1
-fizzy steps-delete 374 --all      # Delete all steps
-fizzy steps-delete 374 --completed # Delete completed
-```
-
-### Tags
-```bash
-fizzy tag 374 bug         # Add tag
-fizzy untag 374 bug       # Remove tag
-```
-
-### Users & Assignment
-```bash
-fizzy users               # List users
-fizzy assign 374 "Wayne"  # Toggle assignment
-```
-
-### Attachments
-```bash
-fizzy attach 374 config.txt "Here's the config"
-```
-
-## Building Binaries
-
-Build for current platform:
-```bash
-bun run build
-```
-
-Build for all platforms:
-```bash
-bun run build:all
-# Creates: fizzy-darwin-arm64, fizzy-darwin-x64, fizzy-linux-x64
-```
+Run `--help` for full command list.
 
 ## Development
 
 ```bash
-bun run dev --help        # Run in dev mode
-bun test                  # Run tests
-bun run typecheck         # Type check
+bun test              # Run tests
+bun run typecheck     # Type check
+bun run build         # Build standalone binary
 ```
 
-## License
+## Related
 
-MIT
+- [Fizzy API Documentation](https://github.com/Concurrent-Systems/fizzy-cli-legacy/blob/main/fizzy-api.md)
+- [Team Claude Config](https://github.com/Concurrent-Systems/claude) - skill definition
+- [fizzy-cli-legacy](https://github.com/Concurrent-Systems/fizzy-cli-legacy) - original bash scripts
