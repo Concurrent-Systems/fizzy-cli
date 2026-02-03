@@ -184,4 +184,30 @@ export class FizzyClient {
       throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
     }
   }
+
+  /**
+   * Download a file as binary data
+   * Path should be relative (e.g., /6103476/rails/active_storage/blobs/redirect/...)
+   * Note: File URLs already include account ID, so we use base domain only
+   */
+  async downloadFile(path: string): Promise<Uint8Array> {
+    // File paths from Fizzy HTML already include account ID (e.g., /6103476/rails/...)
+    // Use base domain without account ID to avoid duplication
+    const baseDomain = 'https://app.fizzy.do';
+    const url = path.startsWith('http') ? path : `${baseDomain}${path}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${this.config.apiToken}`,
+      },
+      redirect: 'follow',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.status} ${response.statusText}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    return new Uint8Array(arrayBuffer);
+  }
 }

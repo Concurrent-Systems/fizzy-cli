@@ -28,6 +28,7 @@ import { tagCard, untagCard } from './commands/tags/tag';
 import { listUsers } from './commands/users/list';
 import { assignUser } from './commands/users/assign';
 import { attachFile } from './commands/attachments/attach';
+import { downloadAttachments } from './commands/attachments/download';
 
 const program = new Command();
 
@@ -316,6 +317,17 @@ program
   .argument('[comment]', 'Comment text')
   .action(async (number: string, file: string, comment?: string) => {
     await attachFile(getClient(), number, file, comment);
+  });
+
+program
+  .command('download')
+  .description('Download attachments from a card')
+  .argument('<number>', 'Card number')
+  .argument('[filename]', 'Specific file to download (optional, partial match)')
+  .option('-o, --output <dir>', 'Output directory', '.')
+  .option('-l, --list', 'List attachments without downloading')
+  .action(async (number: string, filename: string | undefined, options: { output?: string; list?: boolean }) => {
+    await downloadAttachments(getClient(), number, filename, options);
   });
 
 // Parse and run
