@@ -1,11 +1,11 @@
 // Markdown to HTML conversion utilities
-// Ported from fizzy-format.sh
+// Converts markdown to Fizzy-compatible HTML
 
 /**
  * Convert Markdown-like syntax to Fizzy-supported HTML.
  *
  * Supported conversions:
- *   **bold**           -> <strong>bold</strong>
+ *   **bold**           -> <b><strong>bold</strong></b>
  *   *italic*           -> <em>italic</em>
  *   `code`             -> <code>code</code>
  *   # Heading          -> <h2>Heading</h2>
@@ -15,10 +15,10 @@
  *   1. item            -> <ol><li>item</li></ol>
  *   [text](url)        -> <a href="url">text</a>
  *   ---                -> <hr>
- *   Blank line         -> New <p>
+ *   Blank line         -> New <p> with spacing
  *
  * Special handling:
- *   Tables (| col |)   -> HTML table
+ *   Tables (| col |)   -> Fizzy-style table with figure wrapper
  *   ```code blocks```  -> Inline code lines
  */
 export function markdownToHtml(text: string): string {
@@ -29,88 +29,116 @@ export function markdownToHtml(text: string): string {
 
   let result = text;
 
+  // Normalize line endings
+  result = result.replace(/\r\n/g, '\n');
+
   // 1. Code blocks first (before other processing)
   result = result.replace(/```\w*\n([\s\S]*?)```/g, (_, code: string) => {
     const lines = code.trim().split('\n');
     const codeLines = lines
       .filter((line: string) => line.trim())
       .map((line: string) => `<code>${escapeHtml(line)}</code>`);
-    return codeLines.length ? `<p>${codeLines.join('<br>')}</p>` : '';
+    return codeLines.length ? `\n\n<p>${codeLines.join('<br>')}</p>\n\n` : '';
   });
 
-  // 2. Tables
+  // 2. Tables - convert to Fizzy-style tables
   result = result.replace(
-    /^\|.*\|$(\n\|[-| ]+\|$)?(\n\|.*\|$)+/gm,
+    /^\|.+\|[ \t]*$(\n\|[-| :]+\|[ \t]*$)?(\n\|.+\|[ \t]*$)+/gm,
     convertTable
   );
 
-  // 3. Inline formatting
-  result = result.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  result = result.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // 3. Inline formatting (order matters: bold before italic)
+  result = result.replace(/\*\*(.+?)\*\*/g, '<b><strong>$1</strong></b>');
+  result = result.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
   result = result.replace(/`([^`]+)`/g, '<code>$1</code>');
 
-  // 4. Headings
-  result = result.replace(/^### (.+)$/gm, '<h4>$1</h4>');
-  result = result.replace(/^## (.+)$/gm, '<h3>$1</h3>');
-  result = result.replace(/^# (.+)$/gm, '<h2>$1</h2>');
+  // 4. Headings (must be at start of line)
+  result = result.replace(/^### (.+)$/gm, '\n\n<h4>$1</h4>\n\n');
+  result = result.replace(/^## (.+)$/gm, '\n\n<h3>$1</h3>\n\n');
+  result = result.replace(/^# (.+)$/gm, '\n\n<h2>$1</h2>\n\n');
 
   // 5. Links
   result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
 
   // 6. Horizontal rules
-  result = result.replace(/^---$/gm, '<hr>');
+  result = result.replace(/^---+$/gm, '\n\n<hr>\n\n');
 
   // 7. Convert bullet and numbered lists
   result = convertLists(result);
 
-  // 8. Convert paragraphs (split on double newlines)
-  const paragraphs = result.split(/\n\n+/);
-  const htmlParts: string[] = [];
+  // 8. Convert paragraphs
+  result = convertParagraphs(result);
 
-  for (let p of paragraphs) {
-    p = p.trim();
-    if (!p) continue;
-
-    // Do not wrap if already an HTML block element
-    if (/^<(h[1-6]|ul|ol|hr|p|table)/.test(p)) {
-      htmlParts.push(p);
-    } else {
-      // Convert single newlines to <br>
-      p = p.replace(/\n/g, '<br>');
-      htmlParts.push(`<p>${p}</p>`);
-    }
-  }
-
-  return htmlParts.join('');
+  return result;
 }
 
 /**
- * Convert markdown tables to HTML tables
+ * Convert markdown tables to Fizzy-style HTML tables.
+ * Fizzy wraps tables in <figure> and uses <p><b><strong> in cells.
  */
 function convertTable(match: string): string {
   const lines = match.trim().split('\n');
-  if (lines.length < 3) return match;  // Need header, separator, at least one row
+  if (lines.length < 2) return match;
 
+  // Find separator line (contains only |, -, :, and spaces)
+  let separatorIdx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (/^\|[\s\-:|]+\|$/.test(lines[i].trim())) {
+      separatorIdx = i;
+      break;
+    }
+  }
+
+  // Header row (before separator, or first line if no separator)
+  const headerIdx = separatorIdx > 0 ? separatorIdx - 1 : 0;
+  const dataStartIdx = separatorIdx >= 0 ? separatorIdx + 1 : 1;
+
+  // Parse header cells
+  const headerCells = parseCells(lines[headerIdx]);
+  const headerHtml = headerCells
+    .map(cell => `<th><p><b><strong>${cell}</strong></b></p></th>`)
+    .join('');
+
+  // Parse data rows
   const rows: string[] = [];
+  for (let i = dataStartIdx; i < lines.length; i++) {
+    // Skip separator-like lines
+    if (/^\|[\s\-:|]+\|$/.test(lines[i].trim())) continue;
 
-  for (let i = 2; i < lines.length; i++) {  // Skip header and separator
-    const cells = lines[i].split('|').slice(1, -1).map(c => c.trim());
+    const cells = parseCells(lines[i]);
     if (!cells.some(c => c)) continue;
 
-    const rowCells = cells.map((cell, j) => {
-      if (j === 0) {
-        return `<td><strong>${cell}</strong></td>`;
+    const rowCells = cells.map((cell, idx) => {
+      // First column gets bold treatment
+      if (idx === 0) {
+        return `<td><p><b><strong>${cell}</strong></b></p></td>`;
       }
-      return `<td>${cell}</td>`;
+      return `<td><p>${cell}</p></td>`;
     });
     rows.push(`<tr>${rowCells.join('')}</tr>`);
   }
 
-  return rows.length ? `<table><tbody>${rows.join('')}</tbody></table>` : match;
+  if (rows.length === 0) return match;
+
+  // Wrap in figure like Fizzy does
+  return `\n\n<figure class="lexxy-content__table-wrapper"><table><thead><tr>${headerHtml}</tr></thead><tbody>${rows.join('')}</tbody></table></figure>\n\n`;
 }
 
 /**
- * Convert markdown lists to HTML lists
+ * Parse table cells from a pipe-delimited line
+ */
+function parseCells(line: string): string[] {
+  // Remove leading/trailing pipes and split
+  const trimmed = line.trim();
+  if (!trimmed.startsWith('|') || !trimmed.endsWith('|')) {
+    return trimmed.split('|').map(c => c.trim());
+  }
+  return trimmed.slice(1, -1).split('|').map(c => c.trim());
+}
+
+/**
+ * Convert markdown lists to HTML lists.
+ * More forgiving of whitespace and handles nested content.
  */
 function convertLists(text: string): string {
   const lines = text.split('\n');
@@ -119,8 +147,9 @@ function convertLists(text: string): string {
   let inOl = false;
 
   for (const line of lines) {
-    const ulMatch = line.match(/^[-*] (.+)$/);
-    const olMatch = line.match(/^(\d+)\. (.+)$/);
+    // Allow optional leading whitespace (up to 3 spaces)
+    const ulMatch = line.match(/^[ ]{0,3}[-*+] (.+)$/);
+    const olMatch = line.match(/^[ ]{0,3}(\d+)[.)]\s+(.+)$/);
 
     if (ulMatch) {
       if (inOl) {
@@ -143,6 +172,7 @@ function convertLists(text: string): string {
       }
       result.push(`<li>${olMatch[2]}</li>`);
     } else {
+      // Non-list line - close any open lists
       if (inUl) {
         result.push('</ul>');
         inUl = false;
@@ -160,6 +190,51 @@ function convertLists(text: string): string {
   if (inOl) result.push('</ol>');
 
   return result.join('\n');
+}
+
+/**
+ * Convert text blocks to paragraphs with proper spacing.
+ * Adds visual spacing between block elements.
+ */
+function convertParagraphs(text: string): string {
+  // Split on double+ newlines (paragraph breaks)
+  const blocks = text.split(/\n{2,}/);
+  const htmlParts: string[] = [];
+
+  for (let block of blocks) {
+    block = block.trim();
+    if (!block) continue;
+
+    // Check if already a block element
+    if (/^<(h[1-6]|ul|ol|hr|p|table|figure)/.test(block)) {
+      htmlParts.push(block);
+    } else {
+      // Convert single newlines within paragraph to <br>
+      block = block.replace(/\n/g, '<br>');
+      htmlParts.push(`<p>${block}</p>`);
+    }
+  }
+
+  // Join blocks with spacing - add blank paragraph between content blocks
+  // but not around structural elements like hr
+  const result: string[] = [];
+  for (let i = 0; i < htmlParts.length; i++) {
+    result.push(htmlParts[i]);
+
+    // Add spacing after this block if there's another block coming
+    // and neither is a horizontal rule
+    if (i < htmlParts.length - 1) {
+      const current = htmlParts[i];
+      const next = htmlParts[i + 1];
+
+      // Skip spacing around <hr> elements
+      if (!current.startsWith('<hr') && !next.startsWith('<hr')) {
+        result.push('<p><br></p>');
+      }
+    }
+  }
+
+  return result.join('');
 }
 
 /**
