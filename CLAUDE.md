@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 TypeScript CLI for [Fizzy](https://app.fizzy.do) kanban board management.
 
-**Primary use:** Claude Code skill (`/fizzy`) for AI-assisted Fizzy management.
-**Secondary use:** Standalone CLI. The skill definition lives in the [team claude config](https://github.com/Concurrent-Systems/claude) at `skills/fizzy/SKILL.md`.
+**Primary use:** Claude Code skill (`/fizzy`) for AI-assisted Fizzy management. Skill definition: `SKILL.md` in this repo.
+**Secondary use:** Standalone CLI.
 
 ## Tech Stack
 

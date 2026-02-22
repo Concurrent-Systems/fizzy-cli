@@ -8,7 +8,7 @@ TypeScript CLI for [Fizzy](https://app.fizzy.do) kanban board management.
 
 **Secondary use:** Standalone CLI for manual operations.
 
-The skill definition lives in the [team claude config](https://github.com/Concurrent-Systems/claude) at `skills/fizzy/SKILL.md`.
+The skill definition is [`SKILL.md`](SKILL.md) in this repo.
 
 ## Setup
 
@@ -91,5 +91,4 @@ bun run build         # Build standalone binary
 ## Related
 
 - [Fizzy API Documentation](https://github.com/Concurrent-Systems/fizzy-cli-legacy/blob/main/fizzy-api.md)
-- [Team Claude Config](https://github.com/Concurrent-Systems/claude) - skill definition
 - [fizzy-cli-legacy](https://github.com/Concurrent-Systems/fizzy-cli-legacy) - original bash scripts
