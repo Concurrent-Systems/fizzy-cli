@@ -138,73 +138,98 @@ function parseCells(line: string): string[] {
 }
 
 /**
+ * Parse a line as a list item, returning indent, type, and content.
+ */
+function parseListItem(line: string): { indent: number; type: 'ul' | 'ol'; content: string } | null {
+  const ulMatch = line.match(/^([ ]*)([-*+]) (.+)$/);
+  if (ulMatch) return { indent: ulMatch[1].length, type: 'ul', content: ulMatch[3] };
+  const olMatch = line.match(/^([ ]*)(\d+)[.)]\s+(.+)$/);
+  if (olMatch) return { indent: olMatch[1].length, type: 'ol', content: olMatch[3] };
+  return null;
+}
+
+/**
  * Convert markdown lists to HTML lists.
+ * Supports one level of nesting (indented sub-lists inside <li>).
  * Inserts blank lines around list blocks so convertParagraphs treats
- * them as separate blocks (prevents lists being wrapped in <p>).
- * Blank lines between items are tolerated and don't break the list.
+ * them as separate blocks. Blank lines between items don't break the list.
  */
 function convertLists(text: string): string {
   const lines = text.split('\n');
   const result: string[] = [];
-  let inUl = false;
-  let inOl = false;
+  let topList: 'ul' | 'ol' | null = null;
+  let topIndent = 0;
+  let nestedList: 'ul' | 'ol' | null = null;
+
+  function closeNested() {
+    if (nestedList) {
+      result.push(`</${nestedList}>`);
+      result.push('</li>');
+      nestedList = null;
+    }
+  }
+
+  function closeAll() {
+    closeNested();
+    if (topList) {
+      result.push(`</${topList}>`);
+      result.push('');
+      topList = null;
+    }
+  }
 
   for (const line of lines) {
-    // Allow optional leading whitespace (up to 3 spaces)
-    const ulMatch = line.match(/^[ ]{0,3}[-*+] (.+)$/);
-    const olMatch = line.match(/^[ ]{0,3}(\d+)[.)]\s+(.+)$/);
+    const item = parseListItem(line);
 
-    if (ulMatch) {
-      if (inOl) {
-        result.push('</ol>');
-        result.push('');
-        inOl = false;
-      }
-      if (!inUl) {
-        // Blank line before <ul> for paragraph separation
+    if (item) {
+      if (!topList) {
+        // Starting a new top-level list
         if (result.length > 0 && result[result.length - 1] !== '') {
           result.push('');
         }
-        result.push('<ul>');
-        inUl = true;
-      }
-      result.push(`<li>${ulMatch[1]}</li>`);
-    } else if (olMatch) {
-      if (inUl) {
-        result.push('</ul>');
-        result.push('');
-        inUl = false;
-      }
-      if (!inOl) {
-        if (result.length > 0 && result[result.length - 1] !== '') {
+        result.push(`<${item.type}>`);
+        topList = item.type;
+        topIndent = item.indent;
+        result.push(`<li>${item.content}</li>`);
+      } else if (item.indent <= topIndent + 1) {
+        // Same level as top list
+        closeNested();
+        if (topList !== item.type) {
+          result.push(`</${topList}>`);
           result.push('');
+          result.push(`<${item.type}>`);
+          topList = item.type;
         }
-        result.push('<ol>');
-        inOl = true;
+        result.push(`<li>${item.content}</li>`);
+      } else {
+        // Deeper indent — nested list inside the last <li>
+        if (!nestedList) {
+          const lastIdx = result.length - 1;
+          if (result[lastIdx].endsWith('</li>')) {
+            result[lastIdx] = result[lastIdx].slice(0, -5);
+          }
+          result.push(`<${item.type}>`);
+          nestedList = item.type;
+        } else if (nestedList !== item.type) {
+          result.push(`</${nestedList}>`);
+          result.push(`<${item.type}>`);
+          nestedList = item.type;
+        }
+        result.push(`<li>${item.content}</li>`);
       }
-      result.push(`<li>${olMatch[2]}</li>`);
-    } else if (line.trim() === '' && (inUl || inOl)) {
-      // Blank lines within a list — keep the list open
+    } else if (line.trim() === '' && topList) {
+      // Blank lines within a list — keep it open
       continue;
     } else {
-      // Non-list, non-blank line - close any open lists
-      if (inUl) {
-        result.push('</ul>');
-        result.push('');
-        inUl = false;
-      }
-      if (inOl) {
-        result.push('</ol>');
-        result.push('');
-        inOl = false;
-      }
+      // Non-list line — close everything
+      closeAll();
       result.push(line);
     }
   }
 
   // Close any remaining open lists
-  if (inUl) result.push('</ul>');
-  if (inOl) result.push('</ol>');
+  closeNested();
+  if (topList) result.push(`</${topList}>`);
 
   return result.join('\n');
 }
