@@ -47,24 +47,25 @@ export function markdownToHtml(text: string): string {
     convertTable
   );
 
-  // 3. Inline formatting (order matters: bold before italic)
+  // 3. Convert bullet and numbered lists (before inline formatting so
+  //    * bullets aren't consumed by the italic regex)
+  result = convertLists(result);
+
+  // 4. Inline formatting (order matters: bold before italic)
   result = result.replace(/\*\*(.+?)\*\*/g, '<b><strong>$1</strong></b>');
   result = result.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
   result = result.replace(/`([^`]+)`/g, '<code>$1</code>');
 
-  // 4. Headings (must be at start of line)
+  // 5. Headings (must be at start of line)
   result = result.replace(/^### (.+)$/gm, '\n\n<h4>$1</h4>\n\n');
   result = result.replace(/^## (.+)$/gm, '\n\n<h3>$1</h3>\n\n');
   result = result.replace(/^# (.+)$/gm, '\n\n<h2>$1</h2>\n\n');
 
-  // 5. Links
+  // 6. Links
   result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
 
-  // 6. Horizontal rules
+  // 7. Horizontal rules
   result = result.replace(/^---+$/gm, '\n\n<hr>\n\n');
-
-  // 7. Convert bullet and numbered lists
-  result = convertLists(result);
 
   // 8. Convert paragraphs
   result = convertParagraphs(result);
@@ -138,7 +139,9 @@ function parseCells(line: string): string[] {
 
 /**
  * Convert markdown lists to HTML lists.
- * More forgiving of whitespace and handles nested content.
+ * Inserts blank lines around list blocks so convertParagraphs treats
+ * them as separate blocks (prevents lists being wrapped in <p>).
+ * Blank lines between items are tolerated and don't break the list.
  */
 function convertLists(text: string): string {
   const lines = text.split('\n');
@@ -154,9 +157,14 @@ function convertLists(text: string): string {
     if (ulMatch) {
       if (inOl) {
         result.push('</ol>');
+        result.push('');
         inOl = false;
       }
       if (!inUl) {
+        // Blank line before <ul> for paragraph separation
+        if (result.length > 0 && result[result.length - 1] !== '') {
+          result.push('');
+        }
         result.push('<ul>');
         inUl = true;
       }
@@ -164,21 +172,30 @@ function convertLists(text: string): string {
     } else if (olMatch) {
       if (inUl) {
         result.push('</ul>');
+        result.push('');
         inUl = false;
       }
       if (!inOl) {
+        if (result.length > 0 && result[result.length - 1] !== '') {
+          result.push('');
+        }
         result.push('<ol>');
         inOl = true;
       }
       result.push(`<li>${olMatch[2]}</li>`);
+    } else if (line.trim() === '' && (inUl || inOl)) {
+      // Blank lines within a list — keep the list open
+      continue;
     } else {
-      // Non-list line - close any open lists
+      // Non-list, non-blank line - close any open lists
       if (inUl) {
         result.push('</ul>');
+        result.push('');
         inUl = false;
       }
       if (inOl) {
         result.push('</ol>');
+        result.push('');
         inOl = false;
       }
       result.push(line);

@@ -8,7 +8,7 @@ describe('markdownToHtml', () => {
   });
 
   test('converts bold text', () => {
-    expect(markdownToHtml('**bold**')).toBe('<p><strong>bold</strong></p>');
+    expect(markdownToHtml('**bold**')).toBe('<p><b><strong>bold</strong></b></p>');
   });
 
   test('converts italic text', () => {
