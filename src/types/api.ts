@@ -103,6 +103,7 @@ export interface DirectUploadResponse {
   checksum: string;
   direct_upload: DirectUpload;
   signed_id: string;
+  attachable_sgid: string;
 }
 
 export interface Notification {

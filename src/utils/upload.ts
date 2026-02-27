@@ -84,19 +84,16 @@ export async function uploadFile(
     throw new Error('Failed to create direct upload');
   }
 
-  const { direct_upload, signed_id } = uploadResponse;
+  const { direct_upload, attachable_sgid } = uploadResponse;
 
-  if (!direct_upload?.url || !signed_id) {
+  if (!direct_upload?.url || !attachable_sgid) {
     throw new Error('Invalid direct upload response');
   }
 
-  // Step 2: Upload the file to the provided URL
-  await client.uploadFile(direct_upload.url, fileData, {
-    'Content-Type': contentType,
-    'Content-MD5': checksum,
-  });
+  // Step 2: Upload the file to the provided URL (use headers from API response)
+  await client.uploadFile(direct_upload.url, fileData, direct_upload.headers);
 
-  return signed_id;
+  return attachable_sgid;
 }
 
 /**
