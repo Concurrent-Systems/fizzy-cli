@@ -42,10 +42,6 @@ bun run build              # Build standalone binary
 
 **Config** (`src/config.ts`): Loads `FIZZY_API_TOKEN` and `FIZZY_ACCOUNT_ID` from env vars or `.env` files. Lookup order: `$CWD/.env` → CLI directory `.env` → `~/.config/fizzy/.env` → `~/.fizzy/.env`. Env vars override file values.
 
-## API Reference
-
-See `~/g/fizzy-cli-legacy/fizzy-api.md` for complete Fizzy API documentation.
-
 ## Conventions
 
 - CLI commands use `kebab-case` with verb prefixes: `cards-create`, `steps-add`, `boards-create`

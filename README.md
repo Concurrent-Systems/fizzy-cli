@@ -88,7 +88,3 @@ bun run typecheck     # Type check
 bun run build         # Build standalone binary
 ```
 
-## Related
-
-- [Fizzy API Documentation](https://github.com/Concurrent-Systems/fizzy-cli-legacy/blob/main/fizzy-api.md)
-- [fizzy-cli-legacy](https://github.com/Concurrent-Systems/fizzy-cli-legacy) - original bash scripts
