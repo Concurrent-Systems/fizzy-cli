@@ -44,7 +44,7 @@ bun run build              # Build standalone binary
 
 ## API Reference
 
-See `~/github/fizzy-cli-legacy/fizzy-api.md` for complete Fizzy API documentation.
+See `~/g/fizzy-cli-legacy/fizzy-api.md` for complete Fizzy API documentation.
 
 ## Conventions
 
