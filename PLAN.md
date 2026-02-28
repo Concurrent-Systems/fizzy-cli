@@ -8,6 +8,8 @@ No open issues or active work. CLI is stable with all known bugs fixed.
 
 ## Recently Completed
 
+- [x] Remove dead references to fizzy-cli-legacy repo (3d52c44)
+- [x] Fix API reference path in CLAUDE.md (42fd416)
 - [x] Add SKILL.md to repo, remove references to deprecated team claude config (f8c1fa0)
 - [x] **#1** Nested list support in markdown conversion (339bac6)
 - [x] **#2** Fix bullet list conversion — reorder pipeline, paragraph separation, blank line tolerance (beffa62)
