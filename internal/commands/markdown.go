@@ -19,16 +19,29 @@ var md = goldmark.New(
 // that goldmark didn't convert (because they were inside HTML blocks).
 var backtickAttachmentRegex = regexp.MustCompile("`(<action-text-attachment[^>]*>)(</action-text-attachment>)`")
 
+// containsMarkdownOrHTML checks whether content has HTML tags or markdown
+// syntax that would benefit from conversion.
+func containsMarkdownOrHTML(content string) bool {
+	return strings.ContainsAny(content, "<>`")
+}
+
 // markdownToHTML converts markdown content to HTML. Raw HTML in the input is
 // passed through unchanged, while markdown syntax (e.g. backtick code spans)
 // is converted to proper HTML with entities escaped. This prevents content
 // inside markdown code spans (like `<action-text-attachment>`) from being
 // parsed as real HTML by Action Text.
 //
+// Plain text without any HTML or markdown syntax is returned unchanged to
+// avoid wrapping simple text in unnecessary <p> tags.
+//
 // For mixed HTML/markdown content where goldmark treats backtick-wrapped tags
 // as raw HTML, we also escape any action-text-attachment tags that remain
 // wrapped in literal backticks after conversion.
 func markdownToHTML(content string) string {
+	if !containsMarkdownOrHTML(content) {
+		return content
+	}
+
 	var buf bytes.Buffer
 	if err := md.Convert([]byte(content), &buf); err != nil {
 		return content

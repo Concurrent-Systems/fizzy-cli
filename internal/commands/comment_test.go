@@ -135,8 +135,8 @@ func TestCommentCreate(t *testing.T) {
 
 		body := mock.PostCalls[0].Body.(map[string]interface{})
 		comment := body["comment"].(map[string]interface{})
-		if comment["body"] != "<p>New comment</p>\n" {
-			t.Errorf("expected body '<p>New comment</p>\\n', got '%v'", comment["body"])
+		if comment["body"] != "New comment" {
+			t.Errorf("expected body 'New comment', got '%v'", comment["body"])
 		}
 	})
 

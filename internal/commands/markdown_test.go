@@ -11,7 +11,13 @@ func TestMarkdownToHTML(t *testing.T) {
 		input            string
 		shouldContain    []string
 		shouldNotContain []string
+		exactOutput      string
 	}{
+		{
+			name:        "plain text passes through unchanged",
+			input:       "Just a simple comment",
+			exactOutput: "Just a simple comment",
+		},
 		{
 			name:             "backtick-wrapped attachment tag is escaped",
 			input:            "Manually construct the `<action-text-attachment sgid=\"...\" content-type=\"application/vnd.actiontext.mention\"></action-text-attachment>`",
@@ -59,6 +65,13 @@ func TestMarkdownToHTML(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := markdownToHTML(tt.input)
+
+			if tt.exactOutput != "" {
+				if result != tt.exactOutput {
+					t.Errorf("expected exact output %q, got %q", tt.exactOutput, result)
+				}
+				return
+			}
 
 			for _, s := range tt.shouldContain {
 				if !strings.Contains(result, s) {
