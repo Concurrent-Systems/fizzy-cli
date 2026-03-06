@@ -77,6 +77,12 @@ func runSignup(cmd *cobra.Command, args []string) error {
 	fmt.Println("Welcome to Fizzy CLI signup!")
 	fmt.Println()
 
+	return signupWizard()
+}
+
+// signupWizard contains the core interactive signup flow (steps 1-9).
+// Called by both runSignup and runSetup to avoid duplicate preamble.
+func signupWizard() error {
 	// Step 1: Hosting type
 	var hostingType string
 	err := huh.NewSelect[string]().

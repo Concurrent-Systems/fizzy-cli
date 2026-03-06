@@ -62,7 +62,7 @@ func runSetup(cmd *cobra.Command, args []string) error {
 	}
 
 	if hasAccount == "no" {
-		return runSignup(cmd, args)
+		return signupWizard()
 	}
 
 	// Check for existing config
