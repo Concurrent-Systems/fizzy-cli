@@ -4,7 +4,7 @@ Current task context for fizzy-cli. Read at session start, update as work progre
 
 ## Current State
 
-No open issues or active work. CLI is stable with all known bugs fixed.
+- **#10** @mentions in comments/descriptions — PR #11 open, ready for manual testing and review
 
 ## Recently Completed
 
