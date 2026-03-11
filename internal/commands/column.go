@@ -267,6 +267,68 @@ var columnDeleteCmd = &cobra.Command{
 	},
 }
 
+var columnMoveLeftCmd = &cobra.Command{
+	Use:   "move-left COLUMN_ID",
+	Short: "Move a column left",
+	Long:  "Moves a column one position to the left.",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireAuthAndAccount(); err != nil {
+			return err
+		}
+
+		if _, ok := parsePseudoColumnID(args[0]); ok {
+			return errors.NewInvalidArgsError("cannot move pseudo columns (Not Yet, Maybe?, Done)")
+		}
+
+		columnID := args[0]
+
+		_, err := getSDK().Columns().MoveLeft(cmd.Context(), columnID)
+		if err != nil {
+			return convertSDKError(err)
+		}
+
+		breadcrumbs := []Breadcrumb{
+			breadcrumb("move-right", fmt.Sprintf("fizzy column move-right %s", columnID), "Move column right"),
+			breadcrumb("columns", "fizzy column list --board <board_id>", "List columns"),
+		}
+
+		printMutation(map[string]any{}, "", breadcrumbs)
+		return nil
+	},
+}
+
+var columnMoveRightCmd = &cobra.Command{
+	Use:   "move-right COLUMN_ID",
+	Short: "Move a column right",
+	Long:  "Moves a column one position to the right.",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireAuthAndAccount(); err != nil {
+			return err
+		}
+
+		if _, ok := parsePseudoColumnID(args[0]); ok {
+			return errors.NewInvalidArgsError("cannot move pseudo columns (Not Yet, Maybe?, Done)")
+		}
+
+		columnID := args[0]
+
+		_, err := getSDK().Columns().MoveRight(cmd.Context(), columnID)
+		if err != nil {
+			return convertSDKError(err)
+		}
+
+		breadcrumbs := []Breadcrumb{
+			breadcrumb("move-left", fmt.Sprintf("fizzy column move-left %s", columnID), "Move column left"),
+			breadcrumb("columns", "fizzy column list --board <board_id>", "List columns"),
+		}
+
+		printMutation(map[string]any{}, "", breadcrumbs)
+		return nil
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(columnCmd)
 
@@ -293,4 +355,8 @@ func init() {
 	// Delete
 	columnDeleteCmd.Flags().StringVar(&columnDeleteBoard, "board", "", "Board ID (required)")
 	columnCmd.AddCommand(columnDeleteCmd)
+
+	// Move
+	columnCmd.AddCommand(columnMoveLeftCmd)
+	columnCmd.AddCommand(columnMoveRightCmd)
 }

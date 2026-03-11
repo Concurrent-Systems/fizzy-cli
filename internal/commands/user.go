@@ -209,6 +209,148 @@ var userDeactivateCmd = &cobra.Command{
 	},
 }
 
+// User role flags
+var userRoleRole string
+
+var userRoleCmd = &cobra.Command{
+	Use:   "role USER_ID",
+	Short: "Update a user's role",
+	Long:  "Updates a user's role. Requires admin or owner permissions.",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireAuthAndAccount(); err != nil {
+			return err
+		}
+
+		if userRoleRole == "" {
+			return newRequiredFlagError("role")
+		}
+
+		userID := args[0]
+
+		_, err := getSDK().Users().UpdateRole(cmd.Context(), userID, &generated.UpdateUserRoleRequest{
+			Role: userRoleRole,
+		})
+		if err != nil {
+			return convertSDKError(err)
+		}
+
+		breadcrumbs := []Breadcrumb{
+			breadcrumb("show", fmt.Sprintf("fizzy user show %s", userID), "View user"),
+			breadcrumb("people", "fizzy user list", "List users"),
+		}
+
+		printMutation(map[string]any{}, "", breadcrumbs)
+		return nil
+	},
+}
+
+var userAvatarRemoveCmd = &cobra.Command{
+	Use:   "avatar-remove USER_ID",
+	Short: "Remove a user's avatar",
+	Long:  "Removes a user's avatar image.",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireAuthAndAccount(); err != nil {
+			return err
+		}
+
+		userID := args[0]
+
+		_, err := getSDK().Users().DeleteAvatar(cmd.Context(), userID)
+		if err != nil {
+			return convertSDKError(err)
+		}
+
+		breadcrumbs := []Breadcrumb{
+			breadcrumb("show", fmt.Sprintf("fizzy user show %s", userID), "View user"),
+			breadcrumb("people", "fizzy user list", "List users"),
+		}
+
+		printMutation(map[string]any{}, "", breadcrumbs)
+		return nil
+	},
+}
+
+// Push subscription create flags
+var pushSubCreateUser string
+var pushSubCreateEndpoint string
+var pushSubCreateP256dhKey string
+var pushSubCreateAuthKey string
+
+var userPushSubscriptionCreateCmd = &cobra.Command{
+	Use:   "push-subscription-create",
+	Short: "Create a push subscription",
+	Long:  "Creates a web push subscription for a user.",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireAuthAndAccount(); err != nil {
+			return err
+		}
+
+		if pushSubCreateUser == "" {
+			return newRequiredFlagError("user")
+		}
+		if pushSubCreateEndpoint == "" {
+			return newRequiredFlagError("endpoint")
+		}
+		if pushSubCreateP256dhKey == "" {
+			return newRequiredFlagError("p256dh-key")
+		}
+		if pushSubCreateAuthKey == "" {
+			return newRequiredFlagError("auth-key")
+		}
+
+		_, err := getSDK().Users().CreatePushSubscription(cmd.Context(), pushSubCreateUser, &generated.CreatePushSubscriptionRequest{
+			Endpoint:  pushSubCreateEndpoint,
+			P256dhKey: pushSubCreateP256dhKey,
+			AuthKey:   pushSubCreateAuthKey,
+		})
+		if err != nil {
+			return convertSDKError(err)
+		}
+
+		breadcrumbs := []Breadcrumb{
+			breadcrumb("show", fmt.Sprintf("fizzy user show %s", pushSubCreateUser), "View user"),
+		}
+
+		printMutation(map[string]any{}, "", breadcrumbs)
+		return nil
+	},
+}
+
+// Push subscription delete flags
+var pushSubDeleteUser string
+
+var userPushSubscriptionDeleteCmd = &cobra.Command{
+	Use:   "push-subscription-delete SUBSCRIPTION_ID",
+	Short: "Delete a push subscription",
+	Long:  "Deletes a web push subscription for a user.",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireAuthAndAccount(); err != nil {
+			return err
+		}
+
+		if pushSubDeleteUser == "" {
+			return newRequiredFlagError("user")
+		}
+
+		_, err := getSDK().Users().DeletePushSubscription(cmd.Context(), pushSubDeleteUser, args[0])
+		if err != nil {
+			return convertSDKError(err)
+		}
+
+		breadcrumbs := []Breadcrumb{
+			breadcrumb("show", fmt.Sprintf("fizzy user show %s", pushSubDeleteUser), "View user"),
+		}
+
+		printMutation(map[string]any{
+			"deleted": true,
+		}, "", breadcrumbs)
+		return nil
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(userCmd)
 
@@ -227,4 +369,21 @@ func init() {
 
 	// Deactivate
 	userCmd.AddCommand(userDeactivateCmd)
+
+	// Role
+	userRoleCmd.Flags().StringVar(&userRoleRole, "role", "", "Role to assign (required)")
+	userCmd.AddCommand(userRoleCmd)
+
+	// Avatar remove
+	userCmd.AddCommand(userAvatarRemoveCmd)
+
+	// Push subscriptions
+	userPushSubscriptionCreateCmd.Flags().StringVar(&pushSubCreateUser, "user", "", "User ID (required)")
+	userPushSubscriptionCreateCmd.Flags().StringVar(&pushSubCreateEndpoint, "endpoint", "", "Push endpoint URL (required)")
+	userPushSubscriptionCreateCmd.Flags().StringVar(&pushSubCreateP256dhKey, "p256dh-key", "", "P256dh key (required)")
+	userPushSubscriptionCreateCmd.Flags().StringVar(&pushSubCreateAuthKey, "auth-key", "", "Auth key (required)")
+	userCmd.AddCommand(userPushSubscriptionCreateCmd)
+
+	userPushSubscriptionDeleteCmd.Flags().StringVar(&pushSubDeleteUser, "user", "", "User ID (required)")
+	userCmd.AddCommand(userPushSubscriptionDeleteCmd)
 }

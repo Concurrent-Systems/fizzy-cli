@@ -19,6 +19,12 @@ var (
 		{Header: "Name", Field: "name"},
 	}
 
+	stepColumns = render.Columns{
+		{Header: "ID", Field: "id"},
+		{Header: "Content", Field: "content"},
+		{Header: "Done", Field: "completed"},
+	}
+
 	commentColumns = render.Columns{
 		{Header: "ID", Field: "id"},
 	}

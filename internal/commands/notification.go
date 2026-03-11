@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/basecamp/fizzy-sdk/go/pkg/generated"
 	"github.com/spf13/cobra"
 )
 
@@ -212,6 +213,63 @@ var notificationTrayCmd = &cobra.Command{
 	},
 }
 
+var notificationSettingsShowCmd = &cobra.Command{
+	Use:   "settings-show",
+	Short: "Show notification settings",
+	Long:  "Shows your notification settings.",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireAuthAndAccount(); err != nil {
+			return err
+		}
+
+		data, _, err := getSDK().Notifications().GetSettings(cmd.Context())
+		if err != nil {
+			return convertSDKError(err)
+		}
+
+		breadcrumbs := []Breadcrumb{
+			breadcrumb("update", "fizzy notification settings-update --bundle-email-frequency <freq>", "Update settings"),
+			breadcrumb("notifications", "fizzy notification list", "List notifications"),
+		}
+
+		printDetail(normalizeAny(data), "", breadcrumbs)
+		return nil
+	},
+}
+
+// Notification settings update flags
+var notificationSettingsUpdateFrequency string
+
+var notificationSettingsUpdateCmd = &cobra.Command{
+	Use:   "settings-update",
+	Short: "Update notification settings",
+	Long:  "Updates your notification settings.",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireAuthAndAccount(); err != nil {
+			return err
+		}
+
+		if notificationSettingsUpdateFrequency == "" {
+			return newRequiredFlagError("bundle-email-frequency")
+		}
+
+		_, err := getSDK().Notifications().UpdateSettings(cmd.Context(), &generated.UpdateNotificationSettingsRequest{
+			BundleEmailFrequency: notificationSettingsUpdateFrequency,
+		})
+		if err != nil {
+			return convertSDKError(err)
+		}
+
+		breadcrumbs := []Breadcrumb{
+			breadcrumb("show", "fizzy notification settings-show", "View settings"),
+			breadcrumb("notifications", "fizzy notification list", "List notifications"),
+		}
+
+		printMutation(map[string]any{}, "", breadcrumbs)
+		return nil
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(notificationCmd)
 
@@ -228,4 +286,9 @@ func init() {
 	notificationCmd.AddCommand(notificationReadCmd)
 	notificationCmd.AddCommand(notificationUnreadCmd)
 	notificationCmd.AddCommand(notificationReadAllCmd)
+
+	// Settings
+	notificationCmd.AddCommand(notificationSettingsShowCmd)
+	notificationSettingsUpdateCmd.Flags().StringVar(&notificationSettingsUpdateFrequency, "bundle-email-frequency", "", "Email frequency (required)")
+	notificationCmd.AddCommand(notificationSettingsUpdateCmd)
 }

@@ -205,8 +205,50 @@ var stepDeleteCmd = &cobra.Command{
 	},
 }
 
+// Step list flags
+var stepListCard string
+
+var stepListCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List steps on a card",
+	Long:  "Lists all steps (to-do items) on a card.",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireAuthAndAccount(); err != nil {
+			return err
+		}
+
+		if stepListCard == "" {
+			return newRequiredFlagError("card")
+		}
+
+		cardNumber := stepListCard
+
+		data, _, err := getSDK().Steps().List(cmd.Context(), cardNumber)
+		if err != nil {
+			return convertSDKError(err)
+		}
+
+		items := normalizeAny(data)
+
+		count := dataCount(items)
+		summary := fmt.Sprintf("%d steps", count)
+
+		breadcrumbs := []Breadcrumb{
+			breadcrumb("create", fmt.Sprintf("fizzy step create --card %s --content \"text\"", cardNumber), "Add step"),
+			breadcrumb("card", fmt.Sprintf("fizzy card show %s", cardNumber), "View card"),
+		}
+
+		printList(items, stepColumns, summary, breadcrumbs)
+		return nil
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(stepCmd)
+
+	// List
+	stepListCmd.Flags().StringVar(&stepListCard, "card", "", "Card number (required)")
+	stepCmd.AddCommand(stepListCmd)
 
 	// Show
 	stepShowCmd.Flags().StringVar(&stepShowCard, "card", "", "Card number (required)")

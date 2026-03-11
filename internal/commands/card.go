@@ -974,6 +974,86 @@ var cardUngoldenCmd = &cobra.Command{
 	},
 }
 
+var cardPublishCmd = &cobra.Command{
+	Use:   "publish CARD_NUMBER",
+	Short: "Publish a card",
+	Long:  "Publishes a card.",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireAuthAndAccount(); err != nil {
+			return err
+		}
+
+		cardNumber := args[0]
+
+		_, err := getSDK().Cards().Publish(cmd.Context(), cardNumber)
+		if err != nil {
+			return convertSDKError(err)
+		}
+
+		breadcrumbs := []Breadcrumb{
+			breadcrumb("show", fmt.Sprintf("fizzy card show %s", cardNumber), "View card"),
+		}
+
+		printMutation(map[string]any{}, "", breadcrumbs)
+		return nil
+	},
+}
+
+var cardMarkReadCmd = &cobra.Command{
+	Use:   "mark-read CARD_NUMBER",
+	Short: "Mark a card as read",
+	Long:  "Marks a card as read.",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireAuthAndAccount(); err != nil {
+			return err
+		}
+
+		cardNumber := args[0]
+
+		_, err := getSDK().Cards().MarkRead(cmd.Context(), cardNumber)
+		if err != nil {
+			return convertSDKError(err)
+		}
+
+		breadcrumbs := []Breadcrumb{
+			breadcrumb("show", fmt.Sprintf("fizzy card show %s", cardNumber), "View card"),
+			breadcrumb("mark-unread", fmt.Sprintf("fizzy card mark-unread %s", cardNumber), "Mark as unread"),
+		}
+
+		printMutation(map[string]any{}, "", breadcrumbs)
+		return nil
+	},
+}
+
+var cardMarkUnreadCmd = &cobra.Command{
+	Use:   "mark-unread CARD_NUMBER",
+	Short: "Mark a card as unread",
+	Long:  "Marks a card as unread.",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireAuthAndAccount(); err != nil {
+			return err
+		}
+
+		cardNumber := args[0]
+
+		_, err := getSDK().Cards().MarkUnread(cmd.Context(), cardNumber)
+		if err != nil {
+			return convertSDKError(err)
+		}
+
+		breadcrumbs := []Breadcrumb{
+			breadcrumb("show", fmt.Sprintf("fizzy card show %s", cardNumber), "View card"),
+			breadcrumb("mark-read", fmt.Sprintf("fizzy card mark-read %s", cardNumber), "Mark as read"),
+		}
+
+		printMutation(map[string]any{}, "", breadcrumbs)
+		return nil
+	},
+}
+
 // locationCardNumber extracts a card number from a Location header path.
 // Example: "/account/cards/42.json" → "42"
 func locationCardNumber(location string) string {
@@ -1076,4 +1156,11 @@ func init() {
 	// Pin/Unpin
 	cardCmd.AddCommand(cardPinCmd)
 	cardCmd.AddCommand(cardUnpinCmd)
+
+	// Publish
+	cardCmd.AddCommand(cardPublishCmd)
+
+	// Read state
+	cardCmd.AddCommand(cardMarkReadCmd)
+	cardCmd.AddCommand(cardMarkUnreadCmd)
 }

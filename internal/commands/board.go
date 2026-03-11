@@ -415,6 +415,262 @@ var boardEntropyCmd = &cobra.Command{
 	},
 }
 
+// Board closed flags
+var boardClosedBoard string
+var boardClosedPage int
+var boardClosedAll bool
+
+var boardClosedCmd = &cobra.Command{
+	Use:   "closed",
+	Short: "List closed cards on a board",
+	Long:  "Lists all closed cards on a board.",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireAuthAndAccount(); err != nil {
+			return err
+		}
+		if err := checkLimitAll(boardClosedAll); err != nil {
+			return err
+		}
+
+		boardID, err := requireBoard(boardClosedBoard)
+		if err != nil {
+			return err
+		}
+
+		ac := getSDK()
+		var items any
+		var linkNext string
+
+		path := fmt.Sprintf("/boards/%s/columns/closed.json", boardID)
+		if boardClosedPage > 0 {
+			path += "?page=" + strconv.Itoa(boardClosedPage)
+		}
+
+		if boardClosedAll {
+			pages, err := ac.GetAll(cmd.Context(), path)
+			if err != nil {
+				return convertSDKError(err)
+			}
+			items = jsonAnySlice(pages)
+		} else {
+			data, resp, err := ac.Boards().ListClosed(cmd.Context(), boardID, path)
+			if err != nil {
+				return convertSDKError(err)
+			}
+			items = normalizeAny(data)
+			linkNext = parseSDKLinkNext(resp)
+		}
+
+		count := dataCount(items)
+		summary := fmt.Sprintf("%d closed cards", count)
+		if boardClosedAll {
+			summary += " (all)"
+		} else if boardClosedPage > 0 {
+			summary += fmt.Sprintf(" (page %d)", boardClosedPage)
+		}
+
+		breadcrumbs := []Breadcrumb{
+			breadcrumb("show", "fizzy card show <number>", "View card"),
+			breadcrumb("reopen", "fizzy card reopen <number>", "Reopen card"),
+			breadcrumb("board", fmt.Sprintf("fizzy board show %s", boardID), "View board"),
+		}
+
+		hasNext := linkNext != ""
+		if hasNext {
+			nextPage := boardClosedPage + 1
+			if boardClosedPage == 0 {
+				nextPage = 2
+			}
+			breadcrumbs = append(breadcrumbs, breadcrumb("next", fmt.Sprintf("fizzy board closed --board %s --page %d", boardID, nextPage), "Next page"))
+		}
+
+		printListPaginated(items, cardColumns, hasNext, linkNext, boardClosedAll, summary, breadcrumbs)
+		return nil
+	},
+}
+
+// Board postponed flags
+var boardPostponedBoard string
+var boardPostponedPage int
+var boardPostponedAll bool
+
+var boardPostponedCmd = &cobra.Command{
+	Use:   "postponed",
+	Short: "List postponed cards on a board",
+	Long:  "Lists all postponed (Not Now) cards on a board.",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireAuthAndAccount(); err != nil {
+			return err
+		}
+		if err := checkLimitAll(boardPostponedAll); err != nil {
+			return err
+		}
+
+		boardID, err := requireBoard(boardPostponedBoard)
+		if err != nil {
+			return err
+		}
+
+		ac := getSDK()
+		var items any
+		var linkNext string
+
+		path := fmt.Sprintf("/boards/%s/columns/not_now.json", boardID)
+		if boardPostponedPage > 0 {
+			path += "?page=" + strconv.Itoa(boardPostponedPage)
+		}
+
+		if boardPostponedAll {
+			pages, err := ac.GetAll(cmd.Context(), path)
+			if err != nil {
+				return convertSDKError(err)
+			}
+			items = jsonAnySlice(pages)
+		} else {
+			data, resp, err := ac.Boards().ListPostponed(cmd.Context(), boardID, path)
+			if err != nil {
+				return convertSDKError(err)
+			}
+			items = normalizeAny(data)
+			linkNext = parseSDKLinkNext(resp)
+		}
+
+		count := dataCount(items)
+		summary := fmt.Sprintf("%d postponed cards", count)
+		if boardPostponedAll {
+			summary += " (all)"
+		} else if boardPostponedPage > 0 {
+			summary += fmt.Sprintf(" (page %d)", boardPostponedPage)
+		}
+
+		breadcrumbs := []Breadcrumb{
+			breadcrumb("show", "fizzy card show <number>", "View card"),
+			breadcrumb("triage", "fizzy card column <number> --column <column_id>", "Move to column"),
+			breadcrumb("board", fmt.Sprintf("fizzy board show %s", boardID), "View board"),
+		}
+
+		hasNext := linkNext != ""
+		if hasNext {
+			nextPage := boardPostponedPage + 1
+			if boardPostponedPage == 0 {
+				nextPage = 2
+			}
+			breadcrumbs = append(breadcrumbs, breadcrumb("next", fmt.Sprintf("fizzy board postponed --board %s --page %d", boardID, nextPage), "Next page"))
+		}
+
+		printListPaginated(items, cardColumns, hasNext, linkNext, boardPostponedAll, summary, breadcrumbs)
+		return nil
+	},
+}
+
+// Board stream flags
+var boardStreamBoard string
+var boardStreamPage int
+var boardStreamAll bool
+
+var boardStreamCmd = &cobra.Command{
+	Use:   "stream",
+	Short: "List stream cards on a board",
+	Long:  "Lists cards in the stream view for a board.",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireAuthAndAccount(); err != nil {
+			return err
+		}
+		if err := checkLimitAll(boardStreamAll); err != nil {
+			return err
+		}
+
+		boardID, err := requireBoard(boardStreamBoard)
+		if err != nil {
+			return err
+		}
+
+		ac := getSDK()
+		var items any
+		var linkNext string
+
+		path := fmt.Sprintf("/boards/%s/columns/stream.json", boardID)
+		if boardStreamPage > 0 {
+			path += "?page=" + strconv.Itoa(boardStreamPage)
+		}
+
+		if boardStreamAll {
+			pages, err := ac.GetAll(cmd.Context(), path)
+			if err != nil {
+				return convertSDKError(err)
+			}
+			items = jsonAnySlice(pages)
+		} else {
+			data, resp, err := ac.Boards().ListStream(cmd.Context(), boardID, path)
+			if err != nil {
+				return convertSDKError(err)
+			}
+			items = normalizeAny(data)
+			linkNext = parseSDKLinkNext(resp)
+		}
+
+		count := dataCount(items)
+		summary := fmt.Sprintf("%d stream cards", count)
+		if boardStreamAll {
+			summary += " (all)"
+		} else if boardStreamPage > 0 {
+			summary += fmt.Sprintf(" (page %d)", boardStreamPage)
+		}
+
+		breadcrumbs := []Breadcrumb{
+			breadcrumb("show", "fizzy card show <number>", "View card"),
+			breadcrumb("board", fmt.Sprintf("fizzy board show %s", boardID), "View board"),
+		}
+
+		hasNext := linkNext != ""
+		if hasNext {
+			nextPage := boardStreamPage + 1
+			if boardStreamPage == 0 {
+				nextPage = 2
+			}
+			breadcrumbs = append(breadcrumbs, breadcrumb("next", fmt.Sprintf("fizzy board stream --board %s --page %d", boardID, nextPage), "Next page"))
+		}
+
+		printListPaginated(items, cardColumns, hasNext, linkNext, boardStreamAll, summary, breadcrumbs)
+		return nil
+	},
+}
+
+// Board involvement flags
+var boardInvolvementInvolvement string
+
+var boardInvolvementCmd = &cobra.Command{
+	Use:   "involvement BOARD_ID",
+	Short: "Update board involvement",
+	Long:  "Updates your involvement level for a board.",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if err := requireAuthAndAccount(); err != nil {
+			return err
+		}
+
+		if boardInvolvementInvolvement == "" {
+			return newRequiredFlagError("involvement")
+		}
+
+		boardID := args[0]
+
+		_, err := getSDK().Boards().UpdateInvolvement(cmd.Context(), boardID, &generated.UpdateBoardInvolvementRequest{
+			Involvement: boardInvolvementInvolvement,
+		})
+		if err != nil {
+			return convertSDKError(err)
+		}
+
+		breadcrumbs := []Breadcrumb{
+			breadcrumb("show", fmt.Sprintf("fizzy board show %s", boardID), "View board"),
+		}
+
+		printMutation(map[string]any{}, "", breadcrumbs)
+		return nil
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(boardCmd)
 
@@ -448,4 +704,26 @@ func init() {
 	// Entropy
 	boardEntropyCmd.Flags().IntVar(&boardEntropyAutoPostponePeriodInDays, "auto_postpone_period_in_days", 0, "Auto postpone period in days ("+validAutoPostponePeriodsHelp+")")
 	boardCmd.AddCommand(boardEntropyCmd)
+
+	// Closed cards
+	boardClosedCmd.Flags().StringVar(&boardClosedBoard, "board", "", "Board ID (required)")
+	boardClosedCmd.Flags().IntVar(&boardClosedPage, "page", 0, "Page number")
+	boardClosedCmd.Flags().BoolVar(&boardClosedAll, "all", false, "Fetch all pages")
+	boardCmd.AddCommand(boardClosedCmd)
+
+	// Postponed cards
+	boardPostponedCmd.Flags().StringVar(&boardPostponedBoard, "board", "", "Board ID (required)")
+	boardPostponedCmd.Flags().IntVar(&boardPostponedPage, "page", 0, "Page number")
+	boardPostponedCmd.Flags().BoolVar(&boardPostponedAll, "all", false, "Fetch all pages")
+	boardCmd.AddCommand(boardPostponedCmd)
+
+	// Stream cards
+	boardStreamCmd.Flags().StringVar(&boardStreamBoard, "board", "", "Board ID (required)")
+	boardStreamCmd.Flags().IntVar(&boardStreamPage, "page", 0, "Page number")
+	boardStreamCmd.Flags().BoolVar(&boardStreamAll, "all", false, "Fetch all pages")
+	boardCmd.AddCommand(boardStreamCmd)
+
+	// Involvement
+	boardInvolvementCmd.Flags().StringVar(&boardInvolvementInvolvement, "involvement", "", "Involvement level (required)")
+	boardCmd.AddCommand(boardInvolvementCmd)
 }

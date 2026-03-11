@@ -1,7 +1,13 @@
 CMD fizzy
 CMD fizzy account
 CMD fizzy account entropy
+CMD fizzy account export-create
+CMD fizzy account export-show
 CMD fizzy account help
+CMD fizzy account join-code-reset
+CMD fizzy account join-code-show
+CMD fizzy account join-code-update
+CMD fizzy account settings-update
 CMD fizzy account show
 CMD fizzy auth
 CMD fizzy auth help
@@ -11,13 +17,17 @@ CMD fizzy auth logout
 CMD fizzy auth status
 CMD fizzy auth switch
 CMD fizzy board
+CMD fizzy board closed
 CMD fizzy board create
 CMD fizzy board delete
 CMD fizzy board entropy
 CMD fizzy board help
+CMD fizzy board involvement
 CMD fizzy board list
+CMD fizzy board postponed
 CMD fizzy board publish
 CMD fizzy board show
+CMD fizzy board stream
 CMD fizzy board unpublish
 CMD fizzy board update
 CMD fizzy card
@@ -34,9 +44,12 @@ CMD fizzy card golden
 CMD fizzy card help
 CMD fizzy card image-remove
 CMD fizzy card list
+CMD fizzy card mark-read
+CMD fizzy card mark-unread
 CMD fizzy card move
 CMD fizzy card pin
 CMD fizzy card postpone
+CMD fizzy card publish
 CMD fizzy card reopen
 CMD fizzy card self-assign
 CMD fizzy card show
@@ -52,6 +65,8 @@ CMD fizzy column create
 CMD fizzy column delete
 CMD fizzy column help
 CMD fizzy column list
+CMD fizzy column move-left
+CMD fizzy column move-right
 CMD fizzy column show
 CMD fizzy column update
 CMD fizzy commands
@@ -79,6 +94,8 @@ CMD fizzy notification help
 CMD fizzy notification list
 CMD fizzy notification read
 CMD fizzy notification read-all
+CMD fizzy notification settings-show
+CMD fizzy notification settings-update
 CMD fizzy notification tray
 CMD fizzy notification unread
 CMD fizzy pin
@@ -105,6 +122,7 @@ CMD fizzy step
 CMD fizzy step create
 CMD fizzy step delete
 CMD fizzy step help
+CMD fizzy step list
 CMD fizzy step show
 CMD fizzy step update
 CMD fizzy tag
@@ -114,9 +132,13 @@ CMD fizzy upload
 CMD fizzy upload file
 CMD fizzy upload help
 CMD fizzy user
+CMD fizzy user avatar-remove
 CMD fizzy user deactivate
 CMD fizzy user help
 CMD fizzy user list
+CMD fizzy user push-subscription-create
+CMD fizzy user push-subscription-delete
+CMD fizzy user role
 CMD fizzy user show
 CMD fizzy user update
 CMD fizzy version
@@ -168,6 +190,32 @@ FLAG fizzy account entropy --quiet type=bool
 FLAG fizzy account entropy --styled type=bool
 FLAG fizzy account entropy --token type=string
 FLAG fizzy account entropy --verbose type=bool
+FLAG fizzy account export-create --agent type=bool
+FLAG fizzy account export-create --api-url type=string
+FLAG fizzy account export-create --count type=bool
+FLAG fizzy account export-create --help type=bool
+FLAG fizzy account export-create --ids-only type=bool
+FLAG fizzy account export-create --json type=bool
+FLAG fizzy account export-create --limit type=int
+FLAG fizzy account export-create --markdown type=bool
+FLAG fizzy account export-create --profile type=string
+FLAG fizzy account export-create --quiet type=bool
+FLAG fizzy account export-create --styled type=bool
+FLAG fizzy account export-create --token type=string
+FLAG fizzy account export-create --verbose type=bool
+FLAG fizzy account export-show --agent type=bool
+FLAG fizzy account export-show --api-url type=string
+FLAG fizzy account export-show --count type=bool
+FLAG fizzy account export-show --help type=bool
+FLAG fizzy account export-show --ids-only type=bool
+FLAG fizzy account export-show --json type=bool
+FLAG fizzy account export-show --limit type=int
+FLAG fizzy account export-show --markdown type=bool
+FLAG fizzy account export-show --profile type=string
+FLAG fizzy account export-show --quiet type=bool
+FLAG fizzy account export-show --styled type=bool
+FLAG fizzy account export-show --token type=string
+FLAG fizzy account export-show --verbose type=bool
 FLAG fizzy account help --agent type=bool
 FLAG fizzy account help --api-url type=string
 FLAG fizzy account help --count type=bool
@@ -181,6 +229,60 @@ FLAG fizzy account help --quiet type=bool
 FLAG fizzy account help --styled type=bool
 FLAG fizzy account help --token type=string
 FLAG fizzy account help --verbose type=bool
+FLAG fizzy account join-code-reset --agent type=bool
+FLAG fizzy account join-code-reset --api-url type=string
+FLAG fizzy account join-code-reset --count type=bool
+FLAG fizzy account join-code-reset --help type=bool
+FLAG fizzy account join-code-reset --ids-only type=bool
+FLAG fizzy account join-code-reset --json type=bool
+FLAG fizzy account join-code-reset --limit type=int
+FLAG fizzy account join-code-reset --markdown type=bool
+FLAG fizzy account join-code-reset --profile type=string
+FLAG fizzy account join-code-reset --quiet type=bool
+FLAG fizzy account join-code-reset --styled type=bool
+FLAG fizzy account join-code-reset --token type=string
+FLAG fizzy account join-code-reset --verbose type=bool
+FLAG fizzy account join-code-show --agent type=bool
+FLAG fizzy account join-code-show --api-url type=string
+FLAG fizzy account join-code-show --count type=bool
+FLAG fizzy account join-code-show --help type=bool
+FLAG fizzy account join-code-show --ids-only type=bool
+FLAG fizzy account join-code-show --json type=bool
+FLAG fizzy account join-code-show --limit type=int
+FLAG fizzy account join-code-show --markdown type=bool
+FLAG fizzy account join-code-show --profile type=string
+FLAG fizzy account join-code-show --quiet type=bool
+FLAG fizzy account join-code-show --styled type=bool
+FLAG fizzy account join-code-show --token type=string
+FLAG fizzy account join-code-show --verbose type=bool
+FLAG fizzy account join-code-update --agent type=bool
+FLAG fizzy account join-code-update --api-url type=string
+FLAG fizzy account join-code-update --count type=bool
+FLAG fizzy account join-code-update --help type=bool
+FLAG fizzy account join-code-update --ids-only type=bool
+FLAG fizzy account join-code-update --json type=bool
+FLAG fizzy account join-code-update --limit type=int
+FLAG fizzy account join-code-update --markdown type=bool
+FLAG fizzy account join-code-update --profile type=string
+FLAG fizzy account join-code-update --quiet type=bool
+FLAG fizzy account join-code-update --styled type=bool
+FLAG fizzy account join-code-update --token type=string
+FLAG fizzy account join-code-update --usage-limit type=int
+FLAG fizzy account join-code-update --verbose type=bool
+FLAG fizzy account settings-update --agent type=bool
+FLAG fizzy account settings-update --api-url type=string
+FLAG fizzy account settings-update --count type=bool
+FLAG fizzy account settings-update --help type=bool
+FLAG fizzy account settings-update --ids-only type=bool
+FLAG fizzy account settings-update --json type=bool
+FLAG fizzy account settings-update --limit type=int
+FLAG fizzy account settings-update --markdown type=bool
+FLAG fizzy account settings-update --name type=string
+FLAG fizzy account settings-update --profile type=string
+FLAG fizzy account settings-update --quiet type=bool
+FLAG fizzy account settings-update --styled type=bool
+FLAG fizzy account settings-update --token type=string
+FLAG fizzy account settings-update --verbose type=bool
 FLAG fizzy account show --agent type=bool
 FLAG fizzy account show --api-url type=string
 FLAG fizzy account show --count type=bool
@@ -299,6 +401,22 @@ FLAG fizzy board --quiet type=bool
 FLAG fizzy board --styled type=bool
 FLAG fizzy board --token type=string
 FLAG fizzy board --verbose type=bool
+FLAG fizzy board closed --agent type=bool
+FLAG fizzy board closed --all type=bool
+FLAG fizzy board closed --api-url type=string
+FLAG fizzy board closed --board type=string
+FLAG fizzy board closed --count type=bool
+FLAG fizzy board closed --help type=bool
+FLAG fizzy board closed --ids-only type=bool
+FLAG fizzy board closed --json type=bool
+FLAG fizzy board closed --limit type=int
+FLAG fizzy board closed --markdown type=bool
+FLAG fizzy board closed --page type=int
+FLAG fizzy board closed --profile type=string
+FLAG fizzy board closed --quiet type=bool
+FLAG fizzy board closed --styled type=bool
+FLAG fizzy board closed --token type=string
+FLAG fizzy board closed --verbose type=bool
 FLAG fizzy board create --agent type=bool
 FLAG fizzy board create --all_access type=string
 FLAG fizzy board create --api-url type=string
@@ -355,6 +473,20 @@ FLAG fizzy board help --quiet type=bool
 FLAG fizzy board help --styled type=bool
 FLAG fizzy board help --token type=string
 FLAG fizzy board help --verbose type=bool
+FLAG fizzy board involvement --agent type=bool
+FLAG fizzy board involvement --api-url type=string
+FLAG fizzy board involvement --count type=bool
+FLAG fizzy board involvement --help type=bool
+FLAG fizzy board involvement --ids-only type=bool
+FLAG fizzy board involvement --involvement type=string
+FLAG fizzy board involvement --json type=bool
+FLAG fizzy board involvement --limit type=int
+FLAG fizzy board involvement --markdown type=bool
+FLAG fizzy board involvement --profile type=string
+FLAG fizzy board involvement --quiet type=bool
+FLAG fizzy board involvement --styled type=bool
+FLAG fizzy board involvement --token type=string
+FLAG fizzy board involvement --verbose type=bool
 FLAG fizzy board list --agent type=bool
 FLAG fizzy board list --all type=bool
 FLAG fizzy board list --api-url type=string
@@ -370,6 +502,22 @@ FLAG fizzy board list --quiet type=bool
 FLAG fizzy board list --styled type=bool
 FLAG fizzy board list --token type=string
 FLAG fizzy board list --verbose type=bool
+FLAG fizzy board postponed --agent type=bool
+FLAG fizzy board postponed --all type=bool
+FLAG fizzy board postponed --api-url type=string
+FLAG fizzy board postponed --board type=string
+FLAG fizzy board postponed --count type=bool
+FLAG fizzy board postponed --help type=bool
+FLAG fizzy board postponed --ids-only type=bool
+FLAG fizzy board postponed --json type=bool
+FLAG fizzy board postponed --limit type=int
+FLAG fizzy board postponed --markdown type=bool
+FLAG fizzy board postponed --page type=int
+FLAG fizzy board postponed --profile type=string
+FLAG fizzy board postponed --quiet type=bool
+FLAG fizzy board postponed --styled type=bool
+FLAG fizzy board postponed --token type=string
+FLAG fizzy board postponed --verbose type=bool
 FLAG fizzy board publish --agent type=bool
 FLAG fizzy board publish --api-url type=string
 FLAG fizzy board publish --count type=bool
@@ -396,6 +544,22 @@ FLAG fizzy board show --quiet type=bool
 FLAG fizzy board show --styled type=bool
 FLAG fizzy board show --token type=string
 FLAG fizzy board show --verbose type=bool
+FLAG fizzy board stream --agent type=bool
+FLAG fizzy board stream --all type=bool
+FLAG fizzy board stream --api-url type=string
+FLAG fizzy board stream --board type=string
+FLAG fizzy board stream --count type=bool
+FLAG fizzy board stream --help type=bool
+FLAG fizzy board stream --ids-only type=bool
+FLAG fizzy board stream --json type=bool
+FLAG fizzy board stream --limit type=int
+FLAG fizzy board stream --markdown type=bool
+FLAG fizzy board stream --page type=int
+FLAG fizzy board stream --profile type=string
+FLAG fizzy board stream --quiet type=bool
+FLAG fizzy board stream --styled type=bool
+FLAG fizzy board stream --token type=string
+FLAG fizzy board stream --verbose type=bool
 FLAG fizzy board unpublish --agent type=bool
 FLAG fizzy board unpublish --api-url type=string
 FLAG fizzy board unpublish --count type=bool
@@ -632,6 +796,32 @@ FLAG fizzy card list --tag type=string
 FLAG fizzy card list --token type=string
 FLAG fizzy card list --unassigned type=bool
 FLAG fizzy card list --verbose type=bool
+FLAG fizzy card mark-read --agent type=bool
+FLAG fizzy card mark-read --api-url type=string
+FLAG fizzy card mark-read --count type=bool
+FLAG fizzy card mark-read --help type=bool
+FLAG fizzy card mark-read --ids-only type=bool
+FLAG fizzy card mark-read --json type=bool
+FLAG fizzy card mark-read --limit type=int
+FLAG fizzy card mark-read --markdown type=bool
+FLAG fizzy card mark-read --profile type=string
+FLAG fizzy card mark-read --quiet type=bool
+FLAG fizzy card mark-read --styled type=bool
+FLAG fizzy card mark-read --token type=string
+FLAG fizzy card mark-read --verbose type=bool
+FLAG fizzy card mark-unread --agent type=bool
+FLAG fizzy card mark-unread --api-url type=string
+FLAG fizzy card mark-unread --count type=bool
+FLAG fizzy card mark-unread --help type=bool
+FLAG fizzy card mark-unread --ids-only type=bool
+FLAG fizzy card mark-unread --json type=bool
+FLAG fizzy card mark-unread --limit type=int
+FLAG fizzy card mark-unread --markdown type=bool
+FLAG fizzy card mark-unread --profile type=string
+FLAG fizzy card mark-unread --quiet type=bool
+FLAG fizzy card mark-unread --styled type=bool
+FLAG fizzy card mark-unread --token type=string
+FLAG fizzy card mark-unread --verbose type=bool
 FLAG fizzy card move --agent type=bool
 FLAG fizzy card move --api-url type=string
 FLAG fizzy card move --count type=bool
@@ -672,6 +862,19 @@ FLAG fizzy card postpone --quiet type=bool
 FLAG fizzy card postpone --styled type=bool
 FLAG fizzy card postpone --token type=string
 FLAG fizzy card postpone --verbose type=bool
+FLAG fizzy card publish --agent type=bool
+FLAG fizzy card publish --api-url type=string
+FLAG fizzy card publish --count type=bool
+FLAG fizzy card publish --help type=bool
+FLAG fizzy card publish --ids-only type=bool
+FLAG fizzy card publish --json type=bool
+FLAG fizzy card publish --limit type=int
+FLAG fizzy card publish --markdown type=bool
+FLAG fizzy card publish --profile type=string
+FLAG fizzy card publish --quiet type=bool
+FLAG fizzy card publish --styled type=bool
+FLAG fizzy card publish --token type=string
+FLAG fizzy card publish --verbose type=bool
 FLAG fizzy card reopen --agent type=bool
 FLAG fizzy card reopen --api-url type=string
 FLAG fizzy card reopen --count type=bool
@@ -878,6 +1081,32 @@ FLAG fizzy column list --quiet type=bool
 FLAG fizzy column list --styled type=bool
 FLAG fizzy column list --token type=string
 FLAG fizzy column list --verbose type=bool
+FLAG fizzy column move-left --agent type=bool
+FLAG fizzy column move-left --api-url type=string
+FLAG fizzy column move-left --count type=bool
+FLAG fizzy column move-left --help type=bool
+FLAG fizzy column move-left --ids-only type=bool
+FLAG fizzy column move-left --json type=bool
+FLAG fizzy column move-left --limit type=int
+FLAG fizzy column move-left --markdown type=bool
+FLAG fizzy column move-left --profile type=string
+FLAG fizzy column move-left --quiet type=bool
+FLAG fizzy column move-left --styled type=bool
+FLAG fizzy column move-left --token type=string
+FLAG fizzy column move-left --verbose type=bool
+FLAG fizzy column move-right --agent type=bool
+FLAG fizzy column move-right --api-url type=string
+FLAG fizzy column move-right --count type=bool
+FLAG fizzy column move-right --help type=bool
+FLAG fizzy column move-right --ids-only type=bool
+FLAG fizzy column move-right --json type=bool
+FLAG fizzy column move-right --limit type=int
+FLAG fizzy column move-right --markdown type=bool
+FLAG fizzy column move-right --profile type=string
+FLAG fizzy column move-right --quiet type=bool
+FLAG fizzy column move-right --styled type=bool
+FLAG fizzy column move-right --token type=string
+FLAG fizzy column move-right --verbose type=bool
 FLAG fizzy column show --agent type=bool
 FLAG fizzy column show --api-url type=string
 FLAG fizzy column show --board type=string
@@ -1256,6 +1485,33 @@ FLAG fizzy notification read-all --quiet type=bool
 FLAG fizzy notification read-all --styled type=bool
 FLAG fizzy notification read-all --token type=string
 FLAG fizzy notification read-all --verbose type=bool
+FLAG fizzy notification settings-show --agent type=bool
+FLAG fizzy notification settings-show --api-url type=string
+FLAG fizzy notification settings-show --count type=bool
+FLAG fizzy notification settings-show --help type=bool
+FLAG fizzy notification settings-show --ids-only type=bool
+FLAG fizzy notification settings-show --json type=bool
+FLAG fizzy notification settings-show --limit type=int
+FLAG fizzy notification settings-show --markdown type=bool
+FLAG fizzy notification settings-show --profile type=string
+FLAG fizzy notification settings-show --quiet type=bool
+FLAG fizzy notification settings-show --styled type=bool
+FLAG fizzy notification settings-show --token type=string
+FLAG fizzy notification settings-show --verbose type=bool
+FLAG fizzy notification settings-update --agent type=bool
+FLAG fizzy notification settings-update --api-url type=string
+FLAG fizzy notification settings-update --bundle-email-frequency type=string
+FLAG fizzy notification settings-update --count type=bool
+FLAG fizzy notification settings-update --help type=bool
+FLAG fizzy notification settings-update --ids-only type=bool
+FLAG fizzy notification settings-update --json type=bool
+FLAG fizzy notification settings-update --limit type=int
+FLAG fizzy notification settings-update --markdown type=bool
+FLAG fizzy notification settings-update --profile type=string
+FLAG fizzy notification settings-update --quiet type=bool
+FLAG fizzy notification settings-update --styled type=bool
+FLAG fizzy notification settings-update --token type=string
+FLAG fizzy notification settings-update --verbose type=bool
 FLAG fizzy notification tray --agent type=bool
 FLAG fizzy notification tray --api-url type=string
 FLAG fizzy notification tray --count type=bool
@@ -1618,6 +1874,20 @@ FLAG fizzy step help --quiet type=bool
 FLAG fizzy step help --styled type=bool
 FLAG fizzy step help --token type=string
 FLAG fizzy step help --verbose type=bool
+FLAG fizzy step list --agent type=bool
+FLAG fizzy step list --api-url type=string
+FLAG fizzy step list --card type=string
+FLAG fizzy step list --count type=bool
+FLAG fizzy step list --help type=bool
+FLAG fizzy step list --ids-only type=bool
+FLAG fizzy step list --json type=bool
+FLAG fizzy step list --limit type=int
+FLAG fizzy step list --markdown type=bool
+FLAG fizzy step list --profile type=string
+FLAG fizzy step list --quiet type=bool
+FLAG fizzy step list --styled type=bool
+FLAG fizzy step list --token type=string
+FLAG fizzy step list --verbose type=bool
 FLAG fizzy step show --agent type=bool
 FLAG fizzy step show --api-url type=string
 FLAG fizzy step show --card type=string
@@ -1742,6 +2012,19 @@ FLAG fizzy user --quiet type=bool
 FLAG fizzy user --styled type=bool
 FLAG fizzy user --token type=string
 FLAG fizzy user --verbose type=bool
+FLAG fizzy user avatar-remove --agent type=bool
+FLAG fizzy user avatar-remove --api-url type=string
+FLAG fizzy user avatar-remove --count type=bool
+FLAG fizzy user avatar-remove --help type=bool
+FLAG fizzy user avatar-remove --ids-only type=bool
+FLAG fizzy user avatar-remove --json type=bool
+FLAG fizzy user avatar-remove --limit type=int
+FLAG fizzy user avatar-remove --markdown type=bool
+FLAG fizzy user avatar-remove --profile type=string
+FLAG fizzy user avatar-remove --quiet type=bool
+FLAG fizzy user avatar-remove --styled type=bool
+FLAG fizzy user avatar-remove --token type=string
+FLAG fizzy user avatar-remove --verbose type=bool
 FLAG fizzy user deactivate --agent type=bool
 FLAG fizzy user deactivate --api-url type=string
 FLAG fizzy user deactivate --count type=bool
@@ -1783,6 +2066,51 @@ FLAG fizzy user list --quiet type=bool
 FLAG fizzy user list --styled type=bool
 FLAG fizzy user list --token type=string
 FLAG fizzy user list --verbose type=bool
+FLAG fizzy user push-subscription-create --agent type=bool
+FLAG fizzy user push-subscription-create --api-url type=string
+FLAG fizzy user push-subscription-create --auth-key type=string
+FLAG fizzy user push-subscription-create --count type=bool
+FLAG fizzy user push-subscription-create --endpoint type=string
+FLAG fizzy user push-subscription-create --help type=bool
+FLAG fizzy user push-subscription-create --ids-only type=bool
+FLAG fizzy user push-subscription-create --json type=bool
+FLAG fizzy user push-subscription-create --limit type=int
+FLAG fizzy user push-subscription-create --markdown type=bool
+FLAG fizzy user push-subscription-create --p256dh-key type=string
+FLAG fizzy user push-subscription-create --profile type=string
+FLAG fizzy user push-subscription-create --quiet type=bool
+FLAG fizzy user push-subscription-create --styled type=bool
+FLAG fizzy user push-subscription-create --token type=string
+FLAG fizzy user push-subscription-create --user type=string
+FLAG fizzy user push-subscription-create --verbose type=bool
+FLAG fizzy user push-subscription-delete --agent type=bool
+FLAG fizzy user push-subscription-delete --api-url type=string
+FLAG fizzy user push-subscription-delete --count type=bool
+FLAG fizzy user push-subscription-delete --help type=bool
+FLAG fizzy user push-subscription-delete --ids-only type=bool
+FLAG fizzy user push-subscription-delete --json type=bool
+FLAG fizzy user push-subscription-delete --limit type=int
+FLAG fizzy user push-subscription-delete --markdown type=bool
+FLAG fizzy user push-subscription-delete --profile type=string
+FLAG fizzy user push-subscription-delete --quiet type=bool
+FLAG fizzy user push-subscription-delete --styled type=bool
+FLAG fizzy user push-subscription-delete --token type=string
+FLAG fizzy user push-subscription-delete --user type=string
+FLAG fizzy user push-subscription-delete --verbose type=bool
+FLAG fizzy user role --agent type=bool
+FLAG fizzy user role --api-url type=string
+FLAG fizzy user role --count type=bool
+FLAG fizzy user role --help type=bool
+FLAG fizzy user role --ids-only type=bool
+FLAG fizzy user role --json type=bool
+FLAG fizzy user role --limit type=int
+FLAG fizzy user role --markdown type=bool
+FLAG fizzy user role --profile type=string
+FLAG fizzy user role --quiet type=bool
+FLAG fizzy user role --role type=string
+FLAG fizzy user role --styled type=bool
+FLAG fizzy user role --token type=string
+FLAG fizzy user role --verbose type=bool
 FLAG fizzy user show --agent type=bool
 FLAG fizzy user show --api-url type=string
 FLAG fizzy user show --count type=bool
@@ -1943,7 +2271,13 @@ FLAG fizzy webhook update --token type=string
 FLAG fizzy webhook update --verbose type=bool
 SUB fizzy account
 SUB fizzy account entropy
+SUB fizzy account export-create
+SUB fizzy account export-show
 SUB fizzy account help
+SUB fizzy account join-code-reset
+SUB fizzy account join-code-show
+SUB fizzy account join-code-update
+SUB fizzy account settings-update
 SUB fizzy account show
 SUB fizzy auth
 SUB fizzy auth help
@@ -1953,13 +2287,17 @@ SUB fizzy auth logout
 SUB fizzy auth status
 SUB fizzy auth switch
 SUB fizzy board
+SUB fizzy board closed
 SUB fizzy board create
 SUB fizzy board delete
 SUB fizzy board entropy
 SUB fizzy board help
+SUB fizzy board involvement
 SUB fizzy board list
+SUB fizzy board postponed
 SUB fizzy board publish
 SUB fizzy board show
+SUB fizzy board stream
 SUB fizzy board unpublish
 SUB fizzy board update
 SUB fizzy card
@@ -1976,9 +2314,12 @@ SUB fizzy card golden
 SUB fizzy card help
 SUB fizzy card image-remove
 SUB fizzy card list
+SUB fizzy card mark-read
+SUB fizzy card mark-unread
 SUB fizzy card move
 SUB fizzy card pin
 SUB fizzy card postpone
+SUB fizzy card publish
 SUB fizzy card reopen
 SUB fizzy card self-assign
 SUB fizzy card show
@@ -1994,6 +2335,8 @@ SUB fizzy column create
 SUB fizzy column delete
 SUB fizzy column help
 SUB fizzy column list
+SUB fizzy column move-left
+SUB fizzy column move-right
 SUB fizzy column show
 SUB fizzy column update
 SUB fizzy commands
@@ -2021,6 +2364,8 @@ SUB fizzy notification help
 SUB fizzy notification list
 SUB fizzy notification read
 SUB fizzy notification read-all
+SUB fizzy notification settings-show
+SUB fizzy notification settings-update
 SUB fizzy notification tray
 SUB fizzy notification unread
 SUB fizzy pin
@@ -2047,6 +2392,7 @@ SUB fizzy step
 SUB fizzy step create
 SUB fizzy step delete
 SUB fizzy step help
+SUB fizzy step list
 SUB fizzy step show
 SUB fizzy step update
 SUB fizzy tag
@@ -2056,9 +2402,13 @@ SUB fizzy upload
 SUB fizzy upload file
 SUB fizzy upload help
 SUB fizzy user
+SUB fizzy user avatar-remove
 SUB fizzy user deactivate
 SUB fizzy user help
 SUB fizzy user list
+SUB fizzy user push-subscription-create
+SUB fizzy user push-subscription-delete
+SUB fizzy user role
 SUB fizzy user show
 SUB fizzy user update
 SUB fizzy version
