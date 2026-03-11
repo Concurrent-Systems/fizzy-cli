@@ -4,7 +4,14 @@ Current task context for fizzy-cli. Read at session start, update as work progre
 
 ## Current State
 
-- **#10** @mentions in comments/descriptions — PR #11 open, ready for manual testing and review
+Open PRs awaiting merge:
+- **#10** @mentions in comments/descriptions — PR #11 (verified working: Faraz confirmed notification)
+- **#4** steps-check idempotency + verbose step IDs — PR #12
+- **#9** column rename/delete commands — PR #13
+- **#3 + #5** code block rendering + literal \n fix — PR #15
+
+Closed:
+- **#6** closed as duplicate of #4
 
 ## Recently Completed
 
