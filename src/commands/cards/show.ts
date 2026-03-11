@@ -58,7 +58,11 @@ export async function showCard(
     console.log('-'.repeat(40));
     for (const step of card.steps) {
       const status = step.completed ? '[x]' : '[ ]';
-      console.log(`  ${status} ${step.content}`);
+      if (options.verbose) {
+        console.log(`  ${status} ${step.content} (ID: ${step.id})`);
+      } else {
+        console.log(`  ${status} ${step.content}`);
+      }
     }
     const completed = card.steps.filter(s => s.completed).length;
     console.log(`  (${completed}/${card.steps.length} completed)`);

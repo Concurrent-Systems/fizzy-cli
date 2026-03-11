@@ -45,6 +45,14 @@ export async function checkStep(
 
   // Determine new completed state
   const newCompleted = completed ?? !step.completed;
+
+  // Idempotent: if --on/--off was explicitly set and step is already in that state, skip
+  if (completed !== undefined && step.completed === newCompleted) {
+    const state = newCompleted ? 'completed' : 'uncompleted';
+    console.log(`Step already ${state}.`);
+    return;
+  }
+
   const action = newCompleted ? 'Completing' : 'Uncompleting';
 
   console.log(`${action} step: ${step.content}`);
