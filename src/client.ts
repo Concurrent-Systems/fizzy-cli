@@ -167,6 +167,26 @@ export class FizzyClient {
   }
 
   /**
+   * Make a GET request and return raw HTML response
+   */
+  async getHtml(path: string): Promise<string> {
+    const url = path.startsWith('http') ? path : `${this.config.baseUrl}${path}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${this.config.apiToken}`,
+        'Accept': 'text/html',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+
+    return response.text();
+  }
+
+  /**
    * Upload a file to a URL with specific headers (for direct uploads)
    */
   async uploadFile(
