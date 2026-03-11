@@ -35,7 +35,14 @@ const program = new Command();
 program
   .name('fizzy')
   .description('CLI for Fizzy kanban board management')
-  .version('1.0.0');
+  .version('1.0.0')
+  .addHelpText('after', `
+Tips:
+  Use @Name in comments/descriptions for mentions (triggers notifications)
+  Use card -v to see comment and step IDs for editing/targeting
+  Use --on/--off with steps-check for safe, idempotent check/uncheck
+  Board, user, tag, and column names resolve case-insensitively
+  Run "fizzy help <command>" for detailed usage of any command`);
 
 // Create client lazily to allow --help without config
 let client: FizzyClient | null = null;
@@ -97,7 +104,7 @@ program
   .command('card')
   .description('View a card with description, steps, and comments')
   .argument('<number>', 'Card number')
-  .option('-v, --verbose', 'Show comment IDs')
+  .option('-v, --verbose', 'Show comment and step IDs for targeting')
   .action(async (number: string, options: { verbose?: boolean }) => {
     await showCard(getClient(), number, options);
   });
@@ -134,20 +141,20 @@ program
   .description('Create a new card')
   .argument('<title>', 'Card title')
   .requiredOption('-b, --board <board>', 'Board ID or name')
-  .option('-d, --description <text>', 'Card description (markdown)')
+  .option('-d, --description <text>', 'Card description (markdown, @mentions supported)')
   .option('-f, --file <path>', 'Read description from file')
   .option('-t, --tags <tags...>', 'Tags to apply')
-  .option('--draft', 'Create as draft')
+  .option('--draft', 'Create as draft (not visible to team until published)')
   .action(async (title: string, options: { board: string; description?: string; file?: string; tags?: string[]; draft?: boolean }) => {
     await createCard(getClient(), title, options);
   });
 
 program
   .command('cards-update')
-  .description('Update a card')
+  .description('Update a card title or description')
   .argument('<number>', 'Card number')
   .option('-t, --title <title>', 'New title')
-  .option('-d, --description <text>', 'New description (markdown)')
+  .option('-d, --description <text>', 'New description (markdown, @mentions supported)')
   .option('-f, --file <path>', 'Read description from file')
   .action(async (number: string, options: { title?: string; description?: string; file?: string }) => {
     await updateCard(getClient(), number, options);
@@ -201,28 +208,28 @@ program
 
 program
   .command('comment')
-  .description('Add a comment to a card')
+  .description('Add a comment to a card (supports markdown and @mentions)')
   .argument('<number>', 'Card number')
-  .argument('<text>', 'Comment text (markdown)')
+  .argument('<text>', 'Comment text (markdown, use @Name for mentions)')
   .action(async (number: string, text: string) => {
     await addComment(getClient(), number, text);
   });
 
 program
   .command('comments-edit')
-  .description('Edit a comment')
+  .description('Edit a comment (use card -v to find comment IDs)')
   .argument('<number>', 'Card number')
-  .argument('<commentId>', 'Comment ID')
-  .argument('<text>', 'New comment text (markdown)')
+  .argument('<commentId>', 'Comment ID (from card -v)')
+  .argument('<text>', 'New comment text (markdown, use @Name for mentions)')
   .action(async (number: string, commentId: string, text: string) => {
     await editComment(getClient(), number, commentId, text);
   });
 
 program
   .command('comments-delete')
-  .description('Delete a comment')
+  .description('Delete a comment (use card -v to find comment IDs)')
   .argument('<number>', 'Card number')
-  .argument('<commentId>', 'Comment ID')
+  .argument('<commentId>', 'Comment ID (from card -v)')
   .action(async (number: string, commentId: string) => {
     await deleteComment(getClient(), number, commentId);
   });
@@ -242,11 +249,11 @@ program
 
 program
   .command('steps-check')
-  .description('Toggle step completion')
+  .description('Check/uncheck a step (toggles by default, use --on/--off for idempotent)')
   .argument('<number>', 'Card number')
   .argument('<step>', 'Step index (1-based), ID, or content substring')
-  .option('--on', 'Mark as completed')
-  .option('--off', 'Mark as not completed')
+  .option('--on', 'Mark as completed (no-op if already done)')
+  .option('--off', 'Mark as not completed (no-op if already unchecked)')
   .action(async (number: string, step: string, options: { on?: boolean; off?: boolean }) => {
     const completed = options.on ? true : options.off ? false : undefined;
     await checkStep(getClient(), number, step, completed);
@@ -298,9 +305,9 @@ program
 
 program
   .command('assign')
-  .description('Assign/unassign a user to/from a card')
+  .description('Toggle assignment of a user to a card')
   .argument('<number>', 'Card number')
-  .argument('<user>', 'User name, email, or ID')
+  .argument('<user>', 'User name, email, or ID (case-insensitive)')
   .action(async (number: string, user: string) => {
     await assignUser(getClient(), number, user);
   });
