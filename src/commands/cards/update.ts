@@ -3,6 +3,7 @@
 import { readFileSync } from 'fs';
 import type { FizzyClient } from '../../client';
 import { markdownToHtml } from '../../utils/markdown';
+import { fetchMentionableUsers, resolveMentions } from '../../utils/mentions';
 
 interface UpdateOptions {
   title?: string;
@@ -24,8 +25,16 @@ export async function updateCard(
   if (options.file) {
     const content = readFileSync(options.file, 'utf-8');
     updates.description = markdownToHtml(content);
+    if (content.includes('@')) {
+      const mentionables = await fetchMentionableUsers(client);
+      updates.description = resolveMentions(updates.description as string, mentionables);
+    }
   } else if (options.description) {
     updates.description = markdownToHtml(options.description);
+    if (options.description.includes('@')) {
+      const mentionables = await fetchMentionableUsers(client);
+      updates.description = resolveMentions(updates.description as string, mentionables);
+    }
   }
 
   if (Object.keys(updates).length === 0) {

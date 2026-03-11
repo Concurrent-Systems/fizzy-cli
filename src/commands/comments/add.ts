@@ -2,13 +2,18 @@
 
 import type { FizzyClient } from '../../client';
 import { markdownToHtml } from '../../utils/markdown';
+import { fetchMentionableUsers, resolveMentions } from '../../utils/mentions';
 
 export async function addComment(
   client: FizzyClient,
   cardNumber: string,
   text: string
 ): Promise<void> {
-  const body = markdownToHtml(text);
+  let body = markdownToHtml(text);
+  if (text.includes('@')) {
+    const mentionables = await fetchMentionableUsers(client);
+    body = resolveMentions(body, mentionables);
+  }
 
   console.log(`Adding comment to card #${cardNumber}...`);
 

@@ -4,6 +4,7 @@ import { readFileSync } from 'fs';
 import type { FizzyClient } from '../../client';
 import type { Board, Tag } from '../../types/api';
 import { markdownToHtml } from '../../utils/markdown';
+import { fetchMentionableUsers, resolveMentions } from '../../utils/mentions';
 
 interface CreateOptions {
   board?: string;
@@ -44,8 +45,16 @@ export async function createCard(
   if (options.file) {
     const content = readFileSync(options.file, 'utf-8');
     description = markdownToHtml(content);
+    if (content.includes('@')) {
+      const mentionables = await fetchMentionableUsers(client);
+      description = resolveMentions(description, mentionables);
+    }
   } else if (options.description) {
     description = markdownToHtml(options.description);
+    if (options.description.includes('@')) {
+      const mentionables = await fetchMentionableUsers(client);
+      description = resolveMentions(description, mentionables);
+    }
   }
 
   // Resolve tags
