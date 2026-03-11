@@ -70,6 +70,70 @@ export async function addColumn(
   console.log(`Board: ${board.name}`);
 }
 
+export async function renameColumn(
+  client: FizzyClient,
+  boardIdOrName: string,
+  columnIdOrName: string,
+  newName: string
+): Promise<void> {
+  const { board, column } = await resolveColumn(client, boardIdOrName, columnIdOrName);
+
+  console.log(`Renaming column "${column.name}" to "${newName}" on "${board.name}"...`);
+
+  await client.put(`/boards/${board.id}/columns/${column.id}.json`, {
+    column: { name: newName },
+  });
+
+  console.log('Column renamed.');
+}
+
+export async function deleteColumn(
+  client: FizzyClient,
+  boardIdOrName: string,
+  columnIdOrName: string
+): Promise<void> {
+  const { board, column } = await resolveColumn(client, boardIdOrName, columnIdOrName);
+
+  console.log(`Deleting column "${column.name}" from "${board.name}"...`);
+
+  await client.delete(`/boards/${board.id}/columns/${column.id}.json`);
+
+  console.log('Column deleted.');
+}
+
+async function resolveColumn(
+  client: FizzyClient,
+  boardIdOrName: string,
+  columnIdOrName: string
+): Promise<{ board: Board; column: Column }> {
+  const boards = await client.getAll<Board>('/boards.json');
+  const board = boards.find(
+    b => b.id === boardIdOrName || b.name.toLowerCase() === boardIdOrName.toLowerCase()
+  );
+
+  if (!board) {
+    console.error(`Board not found: ${boardIdOrName}`);
+    process.exit(1);
+  }
+
+  const columns = await client.getAll<Column>(`/boards/${board.id}/columns.json`);
+  const column = columns.find(
+    c => c.id === columnIdOrName || c.name.toLowerCase() === columnIdOrName.toLowerCase()
+  );
+
+  if (!column) {
+    console.error(`Column not found: ${columnIdOrName}`);
+    console.error('');
+    console.error('Available columns:');
+    for (const c of columns) {
+      console.error(`  - ${c.name} (${c.id})`);
+    }
+    process.exit(1);
+  }
+
+  return { board, column };
+}
+
 // Color mapping
 const colorMap: Record<string, string> = {
   'blue': 'var(--color-card-default)',
