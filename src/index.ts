@@ -9,7 +9,7 @@ import { FizzyClient } from './client';
 // Commands
 import { listBoards } from './commands/boards/list';
 import { createBoard } from './commands/boards/create';
-import { listColumns, addColumn } from './commands/boards/columns';
+import { listColumns, addColumn, renameColumn, deleteColumn } from './commands/boards/columns';
 import { showCard } from './commands/cards/show';
 import { listCards, searchCards, myCards } from './commands/cards/list';
 import { createCard } from './commands/cards/create';
@@ -94,6 +94,25 @@ program
   .option('-c, --color <color>', 'Column color (blue, gray, tan, yellow, lime, aqua, violet, purple, pink)')
   .action(async (board: string, name: string, options: { color?: string }) => {
     await addColumn(getClient(), board, name, options);
+  });
+
+program
+  .command('columns-rename')
+  .description('Rename a column on a board')
+  .argument('<board>', 'Board ID or name')
+  .argument('<column>', 'Column ID or name')
+  .argument('<name>', 'New column name')
+  .action(async (board: string, column: string, name: string) => {
+    await renameColumn(getClient(), board, column, name);
+  });
+
+program
+  .command('columns-delete')
+  .description('Delete a column from a board')
+  .argument('<board>', 'Board ID or name')
+  .argument('<column>', 'Column ID or name')
+  .action(async (board: string, column: string) => {
+    await deleteColumn(getClient(), board, column);
   });
 
 // ============================================================================
