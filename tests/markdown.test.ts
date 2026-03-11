@@ -51,11 +51,45 @@ describe('markdownToHtml', () => {
     expect(result).toContain('</ol>');
   });
 
-  test('converts code blocks', () => {
+  test('converts code blocks to pre+code', () => {
     const md = '```js\nconst x = 1;\n```';
     const result = markdownToHtml(md);
-    expect(result).toContain('<code>');
-    expect(result).toContain('const x = 1;');
+    expect(result).toContain('<pre><code>const x = 1;</code></pre>');
+  });
+
+  test('code blocks preserve multiple lines', () => {
+    const md = '```bash\necho hello\necho world\n```';
+    const result = markdownToHtml(md);
+    expect(result).toContain('<pre><code>echo hello\necho world</code></pre>');
+  });
+
+  test('code blocks preserve blank lines', () => {
+    const md = '```\nline 1\n\nline 3\n```';
+    const result = markdownToHtml(md);
+    expect(result).toContain('<pre><code>line 1\n\nline 3</code></pre>');
+  });
+
+  test('code blocks escape HTML characters', () => {
+    const md = '```\nif (a < b && c > d) {}\n```';
+    const result = markdownToHtml(md);
+    expect(result).toContain('&lt;');
+    expect(result).toContain('&gt;');
+    expect(result).toContain('&amp;');
+  });
+
+  test('code blocks without language identifier', () => {
+    const md = '```\nplain code\n```';
+    const result = markdownToHtml(md);
+    expect(result).toContain('<pre><code>plain code</code></pre>');
+  });
+
+  test('code blocks are not processed by inline formatting', () => {
+    const md = '```\n**not bold** *not italic* `not inline`\n```';
+    const result = markdownToHtml(md);
+    // Content should be escaped, not formatted
+    expect(result).not.toContain('<strong>');
+    expect(result).not.toContain('<em>');
+    expect(result).toContain('**not bold**');
   });
 
   test('wraps plain text in paragraphs', () => {
@@ -125,6 +159,17 @@ describe('markdownToHtml', () => {
     // List must not be wrapped inside a <p>
     expect(result).not.toContain('<p><ul>');
     expect(result).not.toMatch(/<p>[^<]*<ul>/);
+  });
+
+  test('converts literal \\n to line break within a paragraph', () => {
+    const result = markdownToHtml('Line one\\nLine two');
+    expect(result).toBe('<p>Line one<br>Line two</p>');
+  });
+
+  test('converts literal \\n\\n to separate paragraphs', () => {
+    const result = markdownToHtml('Line one\\n\\nLine two');
+    expect(result).toContain('<p>Line one</p>');
+    expect(result).toContain('<p>Line two</p>');
   });
 
   test('blank lines between list items produce one list', () => {

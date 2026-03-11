@@ -19,7 +19,7 @@
  *
  * Special handling:
  *   Tables (| col |)   -> Fizzy-style table with figure wrapper
- *   ```code blocks```  -> Inline code lines
+ *   ```code blocks```  -> <pre><code>code blocks</code></pre>
  */
 export function markdownToHtml(text: string): string {
   // Skip if already HTML (starts with HTML tag)
@@ -32,13 +32,17 @@ export function markdownToHtml(text: string): string {
   // Normalize line endings
   result = result.replace(/\r\n/g, '\n');
 
-  // 1. Code blocks first (before other processing)
+  // Convert literal \n sequences to actual newlines (common in CLI input)
+  result = result.replace(/\\n/g, '\n');
+
+  // 1. Extract code blocks before other processing to protect their content
+  const codeBlocks: string[] = [];
   result = result.replace(/```\w*\n([\s\S]*?)```/g, (_, code: string) => {
-    const lines = code.trim().split('\n');
-    const codeLines = lines
-      .filter((line: string) => line.trim())
-      .map((line: string) => `<code>${escapeHtml(line)}</code>`);
-    return codeLines.length ? `\n\n<p>${codeLines.join('<br>')}</p>\n\n` : '';
+    const trimmed = code.replace(/\n$/, '');
+    if (!trimmed) return '';
+    const placeholder = `\n\n%%CODEBLOCK_${codeBlocks.length}%%\n\n`;
+    codeBlocks.push(`<pre><code>${escapeHtml(trimmed)}</code></pre>`);
+    return placeholder;
   });
 
   // 2. Tables - convert to Fizzy-style tables
@@ -69,6 +73,11 @@ export function markdownToHtml(text: string): string {
 
   // 8. Convert paragraphs
   result = convertParagraphs(result);
+
+  // 9. Reinsert code blocks
+  for (let i = 0; i < codeBlocks.length; i++) {
+    result = result.replace(`%%CODEBLOCK_${i}%%`, codeBlocks[i]);
+  }
 
   return result;
 }
@@ -247,8 +256,8 @@ function convertParagraphs(text: string): string {
     block = block.trim();
     if (!block) continue;
 
-    // Check if already a block element
-    if (/^<(h[1-6]|ul|ol|hr|p|table|figure)/.test(block)) {
+    // Check if already a block element or a code block placeholder
+    if (/^<(h[1-6]|ul|ol|hr|p|table|figure|pre)/.test(block) || /^%%CODEBLOCK_\d+%%$/.test(block)) {
       htmlParts.push(block);
     } else {
       // Convert single newlines within paragraph to <br>
