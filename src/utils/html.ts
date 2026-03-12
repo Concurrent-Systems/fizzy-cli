@@ -40,8 +40,9 @@ export function htmlToText(html: string | null | undefined): string {
   text = text.replace(/<a[^>]*>([\s\S]*?)<\/a>/gi, '$1');
 
   // Handle @ mentions - extract name from nested img title
+  // The API returns: <action-text-attachment ...><img title="Full Name" ...>\nFirstName</action-text-attachment>
   text = text.replace(
-    /<action-text-attachment[^>]*content-type="application\/vnd\.actiontext\.mention"[^>]*><img title="([^"]+)"[^>]*><\/action-text-attachment>/gi,
+    /<action-text-attachment[^>]*content-type="application\/vnd\.actiontext\.mention"[^>]*><img title="([^"]+)"[^>]*>[\s\S]*?<\/action-text-attachment>/gi,
     '@$1'
   );
 
