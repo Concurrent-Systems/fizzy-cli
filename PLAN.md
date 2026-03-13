@@ -8,6 +8,8 @@ No open issues. All PRs merged. CLI is stable.
 
 ## Recently Completed
 
+- [x] Fix agent mention quoting — removed `@"Full Name"` from SKILL.md, all mentions use `@FirstName` (b091bc8)
+
 - [x] **#10** @mentions in comments/descriptions — PR #11 (verified: Faraz confirmed notification)
 - [x] **#4** steps-check --on/--off idempotency + verbose step IDs — PR #12
 - [x] **#9** column rename/delete commands — PR #13
