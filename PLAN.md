@@ -4,7 +4,12 @@ Current task context for fizzy-cli. Read at session start, update as work progre
 
 ## Current State
 
-No open issues. All PRs merged. CLI is stable.
+List rendering fix complete (v1.0.2) — uncommitted on main, needs PR + binary rebuild.
+
+## Next
+
+- [ ] Commit, create issue, PR the list rendering + typecheck fixes
+- [ ] Rebuild binary so Fritz agent picks up the fix
 
 ## Recently Completed
 
