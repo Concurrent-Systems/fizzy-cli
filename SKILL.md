@@ -83,11 +83,17 @@ Triage → REFINE → WAITING → READY → WORKING ON → REVIEW → (DONE)
 
 ## @Mentions
 
-Use `@Name` in comments and descriptions to create real Fizzy mentions (triggers notifications).
+Use `@FirstName` in comments and descriptions to create real Fizzy mentions (triggers notifications).
 
-- `@FirstName` — matches by first name (case-insensitive). E.g., `@Khurram`
-- `@"Full Name"` — quoted, for exact match. E.g., `@"Khurram Shahzad"`
-- Ambiguous first names (multiple users share it) require `@"Full Name"`
+**NEVER use `@"Full Name"` with quotes** — the quotes break shell escaping and the mention won't resolve. Every team member has a unique first name, so `@FirstName` always works.
+
+### Team members
+
+`@Bushra` · `@Faraz` · `@Kennedy` · `@Khurram` · `@Lourens` · `@Lynton` · `@Mubeen` · `@Neelam` · `@Omair` · `@Raza` · `@Wahab` · `@Wayne`
+
+### Syntax
+
+- `@FirstName` — matches by first name (case-insensitive). E.g., `@Faraz`, `@Khurram`
 - Emails (`user@example.com`) are not treated as mentions
 - Unresolved `@Name` stays as plain text (warning printed)
 
