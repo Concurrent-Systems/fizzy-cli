@@ -42,6 +42,7 @@ var (
 	cfgStyled   bool
 	cfgMarkdown bool
 	cfgLimit    int
+	cfgJQ       string
 
 	// Loaded config
 	cfg *config.Config
@@ -81,10 +82,26 @@ Use fizzy to manage boards, cards, comments, and more from your terminal.`,
 		if lastResult != nil {
 			// Test mode — preserve test buffer as writer.
 			outWriter = &testBuf
-			out = output.New(output.Options{Format: format, Writer: &testBuf})
+			var w io.Writer = &testBuf
+			if cfgJQ != "" {
+				jw, err := newJQWriter(&testBuf, cfgJQ)
+				if err != nil {
+					return &output.Error{Code: output.CodeUsage, Message: err.Error()}
+				}
+				w = jw
+			}
+			out = output.New(output.Options{Format: format, Writer: w})
 		} else {
 			outWriter = os.Stdout
-			out = output.New(output.Options{Format: format, Writer: os.Stdout})
+			var w io.Writer = os.Stdout
+			if cfgJQ != "" {
+				jw, err := newJQWriter(os.Stdout, cfgJQ)
+				if err != nil {
+					return &output.Error{Code: output.CodeUsage, Message: err.Error()}
+				}
+				w = jw
+			}
+			out = output.New(output.Options{Format: format, Writer: w})
 		}
 
 		// In test mode, cfg is already set by SetTestConfig - don't overwrite
@@ -217,6 +234,14 @@ func resolveFormat() (output.Format, error) {
 		return output.FormatMarkdown, nil
 	}
 
+	// --jq implies JSON (or quiet for --agent)
+	if cfgJQ != "" {
+		if cfgAgent {
+			return output.FormatQuiet, nil
+		}
+		return output.FormatJSON, nil
+	}
+
 	// --agent alone defaults to FormatQuiet
 	if cfgAgent {
 		return output.FormatQuiet, nil
@@ -228,7 +253,7 @@ func resolveFormat() (output.Format, error) {
 // IsMachineOutput returns true when output should be treated as machine-consumable.
 // True when any machine format flag is set, --agent is set, or stdout/stdin is not a TTY.
 func IsMachineOutput() bool {
-	if cfgAgent || cfgJSON || cfgQuiet || cfgIDsOnly || cfgCount {
+	if cfgAgent || cfgJSON || cfgQuiet || cfgIDsOnly || cfgCount || cfgJQ != "" {
 		return true
 	}
 	if !isatty.IsTerminal(os.Stdout.Fd()) && !isatty.IsCygwinTerminal(os.Stdout.Fd()) {
@@ -253,6 +278,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&cfgStyled, "styled", false, "Styled terminal output with colors")
 	rootCmd.PersistentFlags().BoolVar(&cfgMarkdown, "markdown", false, "Markdown formatted output")
 	rootCmd.PersistentFlags().IntVar(&cfgLimit, "limit", 0, "Maximum number of results to display")
+	rootCmd.PersistentFlags().StringVar(&cfgJQ, "jq", "", "Apply jq filter to JSON output (built-in, no external jq required)")
 
 	installAgentHelp()
 }
@@ -1056,6 +1082,7 @@ func ResetTestMode() {
 	cfgStyled = false
 	cfgMarkdown = false
 	cfgLimit = 0
+	cfgJQ = ""
 	cfgProfile = ""
 }
 
