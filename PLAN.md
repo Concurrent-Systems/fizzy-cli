@@ -4,15 +4,12 @@ Current task context for fizzy-cli. Read at session start, update as work progre
 
 ## Current State
 
-List rendering fix complete (v1.0.2) — uncommitted on main, needs PR + binary rebuild.
-
-## Next
-
-- [ ] Commit, create issue, PR the list rendering + typecheck fixes
-- [ ] Rebuild binary so Fritz agent picks up the fix
+No open issues. All PRs merged. CLI is stable at v1.0.2.
 
 ## Recently Completed
 
+- [x] Fix list spacing in display and HTML generation — v1.0.2 (44a3cff)
+- [x] Fix pre-existing typecheck errors in client.ts (44a3cff)
 - [x] Fix agent mention quoting — removed `@"Full Name"` from SKILL.md, all mentions use `@FirstName` (b091bc8)
 
 - [x] **#10** @mentions in comments/descriptions — PR #11 (verified: Faraz confirmed notification)
