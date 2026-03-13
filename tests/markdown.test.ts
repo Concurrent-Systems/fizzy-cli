@@ -172,6 +172,14 @@ describe('markdownToHtml', () => {
     expect(result).toContain('<p>Line two</p>');
   });
 
+  test('no spacer paragraph before or after lists', () => {
+    const md = 'Heading:\n\n- Item 1\n- Item 2\n\nNext paragraph';
+    const result = markdownToHtml(md);
+    // No <p><br></p> between heading and list or between list and next para
+    expect(result).not.toMatch(/<p><br><\/p><ul>/);
+    expect(result).not.toMatch(/<\/ul><p><br><\/p>/);
+  });
+
   test('blank lines between list items produce one list', () => {
     const md = '- Item 1\n\n- Item 2\n\n- Item 3';
     const result = markdownToHtml(md);

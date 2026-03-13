@@ -85,7 +85,7 @@ export class FizzyClient {
     let nextUrl: string | null = path.startsWith('http') ? path : `${this.config.baseUrl}${path}`;
 
     while (nextUrl) {
-      const response = await this.getPaginated<T>(nextUrl);
+      const response: PaginatedResponse<T> = await this.getPaginated<T>(nextUrl);
       results.push(...response.data);
       nextUrl = response.nextUrl;
     }
@@ -197,7 +197,7 @@ export class FizzyClient {
     const response = await fetch(url, {
       method: 'PUT',
       headers,
-      body: file,
+      body: file as unknown as BodyInit,
     });
 
     if (!response.ok) {

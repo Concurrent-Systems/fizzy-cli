@@ -278,8 +278,10 @@ function convertParagraphs(text: string): string {
       const current = htmlParts[i];
       const next = htmlParts[i + 1];
 
-      // Skip spacing around <hr> elements
-      if (!current.startsWith('<hr') && !next.startsWith('<hr')) {
+      // Skip spacing around <hr> elements and before/after lists
+      if (!current.startsWith('<hr') && !next.startsWith('<hr') &&
+          !next.startsWith('<ul') && !next.startsWith('<ol') &&
+          !current.startsWith('<ul') && !current.startsWith('<ol')) {
         result.push('<p><br></p>');
       }
     }

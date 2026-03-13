@@ -10,6 +10,10 @@ export function htmlToText(html: string | null | undefined): string {
 
   let text = html;
 
+  // Strip <p><br></p> spacers immediately before and after lists
+  text = text.replace(/<p><br><\/p>\s*(?=<[uo]l)/gi, '');
+  text = text.replace(/(<\/[uo]l>)\s*<p><br><\/p>/gi, '$1');
+
   // Add newlines before/after block elements
   text = text.replace(/<h[1-6][^>]*>/gi, '\n');
   text = text.replace(/<\/h[1-6]>/gi, '\n');
@@ -21,17 +25,20 @@ export function htmlToText(html: string | null | undefined): string {
   // Handle ordered lists with numbers
   text = text.replace(/<ol[^>]*>([\s\S]*?)<\/ol>/gi, (match, content) => {
     const items = content.match(/<li[^>]*>([\s\S]*?)<\/li>/gi) || [];
-    return '\n' + items.map((item: string, i: number) => {
+    return items.map((item: string, i: number) => {
       const inner = item.replace(/<li[^>]*>/i, '').replace(/<\/li>/i, '');
       return `  ${i + 1}. ${inner}`;
     }).join('\n') + '\n';
   });
 
-  // Unordered lists
-  text = text.replace(/<ul[^>]*>/gi, '\n');
-  text = text.replace(/<\/ul>/gi, '');
-  text = text.replace(/<li[^>]*>/gi, '  * ');
-  text = text.replace(/<\/li>/gi, '\n');
+  // Unordered lists — process as a block to avoid extra blank lines
+  text = text.replace(/<ul[^>]*>([\s\S]*?)<\/ul>/gi, (match, content) => {
+    const items = content.match(/<li[^>]*>([\s\S]*?)<\/li>/gi) || [];
+    return items.map((item: string) => {
+      const inner = item.replace(/<li[^>]*>/i, '').replace(/<\/li>/i, '');
+      return `  * ${inner}`;
+    }).join('\n') + '\n';
+  });
 
   // Inline formatting - keep content
   text = text.replace(/<strong[^>]*>([\s\S]*?)<\/strong>/gi, '$1');

@@ -30,6 +30,24 @@ describe('htmlToText', () => {
     expect(result).toContain('* Item 2');
   });
 
+  test('no blank line between heading and list', () => {
+    const html = '<p><b><strong>Known gaps</strong></b></p><p><br></p><ul><li>Item 1</li><li>Item 2</li></ul>';
+    const result = htmlToText(html);
+    expect(result).toBe('Known gaps\n * Item 1\n * Item 2');
+  });
+
+  test('no blank lines between ul items with source newlines', () => {
+    const html = '<ul>\n<li>A</li>\n<li>B</li>\n</ul>';
+    const result = htmlToText(html);
+    expect(result).toBe('* A\n * B');
+  });
+
+  test('strips spacer after closing list tag', () => {
+    const html = '<ul><li>X</li></ul><p><br></p><p>Next</p>';
+    const result = htmlToText(html);
+    expect(result).toBe('* X\n\nNext');  // one blank line between list and next paragraph
+  });
+
   test('handles ordered lists with numbers', () => {
     const html = '<ol><li>First</li><li>Second</li></ol>';
     const result = htmlToText(html);
