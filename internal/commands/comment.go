@@ -149,9 +149,9 @@ var commentCreateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			body = markdownToHTML(string(content))
+			body = markdownToHTML(resolveMentions(string(content), getClient()))
 		} else if commentCreateBody != "" {
-			body = markdownToHTML(commentCreateBody)
+			body = markdownToHTML(resolveMentions(commentCreateBody, getClient()))
 		} else {
 			return newRequiredFlagError("body or body_file")
 		}
@@ -209,9 +209,9 @@ var commentUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			body = markdownToHTML(string(content))
+			body = markdownToHTML(resolveMentions(string(content), getClient()))
 		} else if commentUpdateBody != "" {
-			body = markdownToHTML(commentUpdateBody)
+			body = markdownToHTML(resolveMentions(commentUpdateBody, getClient()))
 		}
 
 		commentID := args[0]

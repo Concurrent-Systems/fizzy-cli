@@ -293,9 +293,9 @@ var cardCreateCmd = &cobra.Command{
 			if descErr != nil {
 				return descErr
 			}
-			description = markdownToHTML(string(descContent))
+			description = markdownToHTML(resolveMentions(string(descContent), getClient()))
 		} else if cardCreateDescription != "" {
-			description = markdownToHTML(cardCreateDescription)
+			description = markdownToHTML(resolveMentions(cardCreateDescription, getClient()))
 		}
 
 		ac := getSDK()
@@ -384,9 +384,9 @@ var cardUpdateCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			description = markdownToHTML(string(content))
+			description = markdownToHTML(resolveMentions(string(content), getClient()))
 		} else if cardUpdateDescription != "" {
-			description = markdownToHTML(cardUpdateDescription)
+			description = markdownToHTML(resolveMentions(cardUpdateDescription, getClient()))
 		}
 
 		// Build breadcrumbs
