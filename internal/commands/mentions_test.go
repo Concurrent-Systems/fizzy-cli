@@ -41,6 +41,22 @@ const samplePromptUsersHTML = `
 </lexxy-prompt-item>
 `
 
+// ambiguousHTML has two users with the same first name.
+const ambiguousHTML = `
+<lexxy-prompt-item search="Alex Smith AS" sgid="alex1-sgid">
+  <template type="editor">
+    <img title="Alex Smith" src="/123/users/a1/avatar" width="48" height="48" />
+    Alex
+  </template>
+</lexxy-prompt-item>
+<lexxy-prompt-item search="Alex Jones AJ" sgid="alex2-sgid">
+  <template type="editor">
+    <img title="Alex Jones" src="/123/users/a2/avatar" width="48" height="48" />
+    Alex
+  </template>
+</lexxy-prompt-item>
+`
+
 func newMentionMockClient() *MockClient {
 	m := NewMockClient()
 	m.GetHTMLResponse = &client.APIResponse{
@@ -89,6 +105,40 @@ func TestParseMentionUsersEmpty(t *testing.T) {
 	users := parseMentionUsers([]byte(""))
 	if len(users) != 0 {
 		t.Errorf("expected 0 users from empty HTML, got %d", len(users))
+	}
+}
+
+func TestParseMentionUsersAttributeOrder(t *testing.T) {
+	// sgid before search — should still parse correctly
+	html := `<lexxy-prompt-item sgid="reversed-sgid" search="Test User TU">
+  <template type="editor">
+    <img title="Test User" src="/123/users/t1/avatar" width="48" height="48" />
+    Test
+  </template>
+</lexxy-prompt-item>`
+	users := parseMentionUsers([]byte(html))
+	if len(users) != 1 {
+		t.Fatalf("expected 1 user from reversed attributes, got %d", len(users))
+	}
+	if users[0].FirstName != "Test" {
+		t.Errorf("FirstName = %q, want %q", users[0].FirstName, "Test")
+	}
+	if users[0].SGID != "reversed-sgid" {
+		t.Errorf("SGID = %q, want %q", users[0].SGID, "reversed-sgid")
+	}
+}
+
+func TestParseMentionUsersAvatarScoping(t *testing.T) {
+	// Each user's avatar should come from their own block, not a later one
+	users := parseMentionUsers([]byte(samplePromptUsersHTML))
+	if len(users) < 2 {
+		t.Fatal("expected at least 2 users")
+	}
+	if !strings.Contains(users[0].AvatarSrc, "u1") {
+		t.Errorf("user[0] avatar should contain u1, got %q", users[0].AvatarSrc)
+	}
+	if !strings.Contains(users[1].AvatarSrc, "u2") {
+		t.Errorf("user[1] avatar should contain u2, got %q", users[1].AvatarSrc)
 	}
 }
 
@@ -147,6 +197,23 @@ func TestResolveMentions(t *testing.T) {
 			input:         "Hey @Kennedy",
 			shouldContain: []string{`sgid="kennedy-sgid-789"`, `title="Kennedy"`},
 		},
+		{
+			name:           "mention inside inline code not resolved",
+			input:          "Use `@Wayne` to mention someone",
+			shouldContain:  []string{"`@Wayne`"},
+			shouldNotMatch: []string{"action-text-attachment"},
+		},
+		{
+			name:           "mention inside fenced code block not resolved",
+			input:          "Example:\n```\n@Wayne check this\n```",
+			shouldContain:  []string{"@Wayne"},
+			shouldNotMatch: []string{"action-text-attachment"},
+		},
+		{
+			name:          "mention outside code resolved while code preserved",
+			input:         "@Wayne see `@Bushra` example",
+			shouldContain: []string{`sgid="wayne-sgid-123"`, "`@Bushra`"},
+		},
 	}
 
 	for _, tt := range tests {
@@ -166,6 +233,36 @@ func TestResolveMentions(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestResolveMentionsNoFetchWithoutAt(t *testing.T) {
+	resetMentionCache()
+	mock := newMentionMockClient()
+
+	resolveMentions("Hello world, no mentions here", mock)
+
+	if len(mock.GetHTMLCalls) != 0 {
+		t.Errorf("expected 0 GetHTML calls for text without @, got %d", len(mock.GetHTMLCalls))
+	}
+}
+
+func TestResolveMentionsAmbiguous(t *testing.T) {
+	resetMentionCache()
+	mock := NewMockClient()
+	mock.GetHTMLResponse = &client.APIResponse{
+		StatusCode: 200,
+		Body:       []byte(ambiguousHTML),
+	}
+
+	result := resolveMentions("Hey @Alex check this", mock)
+
+	// Should NOT resolve — ambiguous
+	if strings.Contains(result, "action-text-attachment") {
+		t.Errorf("ambiguous mention should not resolve, got: %s", result)
+	}
+	if !strings.Contains(result, "@Alex") {
+		t.Errorf("ambiguous mention should stay as @Alex, got: %s", result)
 	}
 }
 
@@ -196,5 +293,25 @@ func TestResolveMentionsCaching(t *testing.T) {
 	resolveMentions("@Bushra", mock)
 	if len(mock.GetHTMLCalls) != 1 {
 		t.Errorf("expected still 1 GetHTML call (cached), got %d", len(mock.GetHTMLCalls))
+	}
+}
+
+func TestBuildMentionHTMLEscaping(t *testing.T) {
+	u := mentionUser{
+		FirstName: `O'Brien`,
+		FullName:  `O'Brien <script>`,
+		SGID:      `sgid"test`,
+		AvatarSrc: `/users/1/avatar?a=1&b=2`,
+	}
+	result := buildMentionHTML(u)
+
+	if strings.Contains(result, `<script>`) {
+		t.Error("HTML should be escaped, found raw <script>")
+	}
+	if !strings.Contains(result, `&lt;script&gt;`) {
+		t.Error("expected escaped <script> tag")
+	}
+	if strings.Contains(result, `sgid"test`) {
+		t.Error("SGID with quote should be escaped")
 	}
 }

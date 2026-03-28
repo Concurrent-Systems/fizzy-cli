@@ -179,9 +179,8 @@ func (c *Client) GetHTML(path string) (*APIResponse, error) {
 		return nil, errors.NewNetworkError(fmt.Sprintf("Failed to create request: %v", err))
 	}
 
-	req.Header.Set("Authorization", "Bearer "+c.Token)
+	c.setHeaders(req)
 	req.Header.Set("Accept", "text/html")
-	req.Header.Set("User-Agent", "fizzy-cli/1.0")
 
 	if c.Verbose {
 		fmt.Fprintf(os.Stderr, "> GET %s (HTML)\n", requestURL)

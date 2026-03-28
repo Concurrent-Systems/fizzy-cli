@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"html"
 	"os"
 	"regexp"
 	"strings"
@@ -35,18 +36,38 @@ func resetMentionCache() {
 
 // mentionRegex matches @Name patterns not preceded by word characters or dots
 // (to avoid matching emails like user@example.com).
-var mentionRegex = regexp.MustCompile(`(?:^|[^a-zA-Z0-9_.])@([a-zA-Z][a-zA-Z0-9_]*)`)
+// Supports Unicode letters and hyphens in names (e.g. @José, @Mary-Jane).
+var mentionRegex = regexp.MustCompile(`(?:^|[^-\p{L}\p{N}_.])@([\p{L}][\p{L}\p{N}_-]*)`)
 
-// promptItemRegex parses <lexxy-prompt-item> tags from the /prompts/users HTML.
-var promptItemRegex = regexp.MustCompile(`<lexxy-prompt-item\s+search="([^"]+)"\s+sgid="([^"]+)"[^>]*>`)
+// promptItemRegex matches opening <lexxy-prompt-item> tags.
+// Attributes are extracted separately to handle any order.
+var promptItemRegex = regexp.MustCompile(`<lexxy-prompt-item\s[^>]*>`)
 
-// avatarRegex extracts the src attribute from the first <img> in editor template.
+// searchAttrRegex extracts the search attribute value.
+var searchAttrRegex = regexp.MustCompile(`\ssearch="([^"]+)"`)
+
+// sgidAttrRegex extracts the sgid attribute value.
+var sgidAttrRegex = regexp.MustCompile(`\ssgid="([^"]+)"`)
+
+// promptItemEndRegex matches the closing tag for a prompt item block.
+var promptItemEndRegex = regexp.MustCompile(`</lexxy-prompt-item>`)
+
+// avatarRegex extracts the src attribute from the first <img> tag.
 var avatarRegex = regexp.MustCompile(`<img[^>]+src="([^"]+)"`)
+
+// codeBlockRegex matches fenced code blocks (``` ... ```).
+var codeBlockRegex = regexp.MustCompile("(?s)```.*?```")
+
+// codeSpanRegex matches inline code spans (` ... `).
+var codeSpanRegex = regexp.MustCompile("`[^`]+`")
 
 // resolveMentions scans text for @FirstName patterns and replaces them with
 // ActionText mention HTML. If the text contains no @ characters, it is returned
 // unchanged. On any error fetching users, the original text is returned with a
 // warning printed to stderr.
+//
+// Mentions inside markdown code spans (`@name`) and fenced code blocks are not
+// resolved, preserving the user's intended literal text.
 func resolveMentions(text string, c client.API) string {
 	if !strings.Contains(text, "@") {
 		return text
@@ -65,6 +86,18 @@ func resolveMentions(text string, c client.API) string {
 		return text
 	}
 
+	// Protect code blocks and code spans from mention resolution by replacing
+	// them with placeholders, resolving mentions, then restoring the originals.
+	var codeChunks []string
+	placeholder := func(s string) string {
+		idx := len(codeChunks)
+		codeChunks = append(codeChunks, s)
+		return fmt.Sprintf("\x00CODE%d\x00", idx)
+	}
+
+	protected := codeBlockRegex.ReplaceAllStringFunc(text, placeholder)
+	protected = codeSpanRegex.ReplaceAllStringFunc(protected, placeholder)
+
 	// Find all @Name matches with positions
 	type mentionMatch struct {
 		start int // start of @Name (the @ character)
@@ -72,7 +105,7 @@ func resolveMentions(text string, c client.API) string {
 		name  string
 	}
 
-	allMatches := mentionRegex.FindAllStringSubmatchIndex(text, -1)
+	allMatches := mentionRegex.FindAllStringSubmatchIndex(protected, -1)
 	var matches []mentionMatch
 	for _, loc := range allMatches {
 		// loc[2]:loc[3] is the capture group (the name without @)
@@ -80,7 +113,7 @@ func resolveMentions(text string, c client.API) string {
 		nameEnd := loc[3]
 		// The @ is one character before the name
 		atStart := nameStart - 1
-		name := text[nameStart:nameEnd]
+		name := protected[nameStart:nameEnd]
 		matches = append(matches, mentionMatch{start: atStart, end: nameEnd, name: name})
 	}
 
@@ -98,8 +131,8 @@ func resolveMentions(text string, c client.API) string {
 
 		switch len(found) {
 		case 1:
-			html := buildMentionHTML(found[0])
-			text = text[:m.start] + html + text[m.end:]
+			mentionHTML := buildMentionHTML(found[0])
+			protected = protected[:m.start] + mentionHTML + protected[m.end:]
 		case 0:
 			fmt.Fprintf(os.Stderr, "Warning: could not resolve mention @%s\n", m.name)
 		default:
@@ -111,7 +144,12 @@ func resolveMentions(text string, c client.API) string {
 		}
 	}
 
-	return text
+	// Restore code blocks and spans
+	for i, chunk := range codeChunks {
+		protected = strings.Replace(protected, fmt.Sprintf("\x00CODE%d\x00", i), chunk, 1)
+	}
+
+	return protected
 }
 
 // fetchMentionUsers fetches the list of mentionable users from the API.
@@ -129,17 +167,29 @@ func fetchMentionUsers(c client.API) ([]mentionUser, error) {
 // parseMentionUsers extracts mentionable users from the /prompts/users HTML.
 // Each user is represented as a <lexxy-prompt-item> element with search and sgid
 // attributes, containing <img> tags with avatar URLs.
-func parseMentionUsers(html []byte) []mentionUser {
-	htmlStr := string(html)
-	items := promptItemRegex.FindAllStringSubmatch(htmlStr, -1)
+func parseMentionUsers(htmlBytes []byte) []mentionUser {
+	htmlStr := string(htmlBytes)
+	items := promptItemRegex.FindAllStringIndex(htmlStr, -1)
 	if len(items) == 0 {
 		return nil
 	}
 
+	// Find all closing tags for scoping avatar lookups
+	endIndices := promptItemEndRegex.FindAllStringIndex(htmlStr, -1)
+
 	var users []mentionUser
-	for _, item := range items {
-		search := strings.TrimSpace(item[1])
-		sgid := item[2]
+	for itemIdx, loc := range items {
+		tag := htmlStr[loc[0]:loc[1]]
+
+		// Extract search and sgid attributes (order-independent)
+		searchMatch := searchAttrRegex.FindStringSubmatch(tag)
+		sgidMatch := sgidAttrRegex.FindStringSubmatch(tag)
+		if searchMatch == nil || sgidMatch == nil {
+			continue
+		}
+
+		search := strings.TrimSpace(searchMatch[1])
+		sgid := sgidMatch[1]
 
 		if search == "" || sgid == "" {
 			continue
@@ -161,15 +211,16 @@ func parseMentionUsers(html []byte) []mentionUser {
 		fullName := strings.Join(words, " ")
 		firstName := words[0]
 
-		// Extract avatar URL: find the <img> after this sgid in the HTML.
+		// Extract avatar URL scoped to this prompt-item block only.
 		avatarSrc := ""
-		sgidIdx := strings.Index(htmlStr, `sgid="`+sgid+`"`)
-		if sgidIdx >= 0 {
-			// Search for the first <img> after the sgid
-			remainder := htmlStr[sgidIdx:]
-			if m := avatarRegex.FindStringSubmatch(remainder); len(m) > 1 {
-				avatarSrc = m[1]
-			}
+		blockStart := loc[0]
+		blockEnd := len(htmlStr)
+		if itemIdx < len(endIndices) {
+			blockEnd = endIndices[itemIdx][1]
+		}
+		block := htmlStr[blockStart:blockEnd]
+		if m := avatarRegex.FindStringSubmatch(block); len(m) > 1 {
+			avatarSrc = m[1]
 		}
 
 		users = append(users, mentionUser{
@@ -184,12 +235,16 @@ func parseMentionUsers(html []byte) []mentionUser {
 }
 
 // buildMentionHTML creates the ActionText attachment HTML for a mention.
+// Values are HTML-escaped to prevent injection from user-controlled names.
 func buildMentionHTML(u mentionUser) string {
 	return fmt.Sprintf(
 		`<action-text-attachment sgid="%s" content-type="application/vnd.actiontext.mention">`+
 			`<img title="%s" src="%s" width="48" height="48">%s`+
 			`</action-text-attachment>`,
-		u.SGID, u.FullName, u.AvatarSrc, u.FirstName,
+		html.EscapeString(u.SGID),
+		html.EscapeString(u.FullName),
+		html.EscapeString(u.AvatarSrc),
+		html.EscapeString(u.FirstName),
 	)
 }
 
