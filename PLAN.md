@@ -10,21 +10,23 @@ Active work is on the fork: `~/g/fizzy-cli-fork` (`Concurrent-Systems/fizzy-cli`
 
 ## Active
 
-- [ ] basecamp/fizzy-cli#112 — @mention resolution PR, awaiting upstream review
-- [ ] Clean up test card #539 on Dev board
+- [ ] basecamp/fizzy-cli#112 — @mention resolution PR, all review comments addressed, awaiting human review
+- [ ] basecamp/fizzy-cli#114 — search cross-board fix, Rob's test request addressed, awaiting re-review
 
 ## Next
 
-- [ ] Monitor PR #112 for feedback, iterate if needed
+- [ ] Monitor both PRs for further feedback
 - [ ] If merged: switch from fork binary to official releases
 - [ ] If rejected: maintain fork with upstream sync
 
-## Completed (2026-03-28)
+## Completed (2026-03-28/29)
 
 - [x] Evaluated official CLI vs custom — official wins (152 vs 38 commands)
 - [x] Installed official CLI v3.0.3, configured auth/account/board
 - [x] Forked to Concurrent-Systems/fizzy-cli, added @mention resolution in Go
-- [x] All tests passing (12 new mention tests + all existing)
+- [x] Addressed 15 automated review comments (Cubic + Copilot) across PR #112
+- [x] Found search defaultBoard bug — filed issue #113, submitted PR #114
+- [x] Rob Zolkos reviewed #114, requested tag/assignee tests — added
 - [x] Updated SKILL.md (env + repo + embedded) with generic mention docs
-- [x] Submitted upstream PR basecamp/fizzy-cli#112
 - [x] Renamed old TS repo to fizzy-cli-legacy-2
+- [x] Test card #539 cleaned up
