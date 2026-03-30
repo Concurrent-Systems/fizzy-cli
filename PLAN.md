@@ -11,11 +11,10 @@ Active work is on the fork: `~/g/fizzy-cli-fork` (`Concurrent-Systems/fizzy-cli`
 ## Active
 
 - [ ] basecamp/fizzy-cli#112 — @mention resolution PR, all review comments addressed, awaiting human review
-- [ ] basecamp/fizzy-cli#114 — search cross-board fix, Rob's test request addressed, awaiting re-review
 
 ## Next
 
-- [ ] Monitor both PRs for further feedback
+- [ ] Monitor PR #112 for Rob's review
 - [ ] If merged: switch from fork binary to official releases
 - [ ] If rejected: maintain fork with upstream sync
 
@@ -26,7 +25,7 @@ Active work is on the fork: `~/g/fizzy-cli-fork` (`Concurrent-Systems/fizzy-cli`
 - [x] Forked to Concurrent-Systems/fizzy-cli, added @mention resolution in Go
 - [x] Addressed 15 automated review comments (Cubic + Copilot) across PR #112
 - [x] Found search defaultBoard bug — filed issue #113, submitted PR #114
-- [x] Rob Zolkos reviewed #114, requested tag/assignee tests — added
+- [x] Rob Zolkos reviewed #114, requested tag/assignee tests — added, merged 2026-03-30
 - [x] Updated SKILL.md (env + repo + embedded) with generic mention docs
 - [x] Renamed old TS repo to fizzy-cli-legacy-2
 - [x] Test card #539 cleaned up
