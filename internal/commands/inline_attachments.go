@@ -6,21 +6,26 @@ import (
 	"os"
 	"strings"
 
+	"github.com/basecamp/fizzy-cli/internal/client"
 	"github.com/basecamp/fizzy-cli/internal/errors"
 )
 
-func resolveRichTextContent(content string, filePath string) (string, error) {
+// resolveRichTextContent reads body content (inline or from a file), resolves
+// @Name mentions to ActionText mention attachments using c, then converts the
+// result from markdown to HTML. Mentions are resolved before HTML conversion so
+// the inserted attachment markup passes through goldmark unchanged.
+func resolveRichTextContent(content string, filePath string, c client.API) (string, error) {
 	if filePath != "" {
 		fileContent, err := os.ReadFile(filePath)
 		if err != nil {
 			return "", err
 		}
-		return markdownToHTML(string(fileContent)), nil
+		return markdownToHTML(resolveMentions(string(fileContent), c)), nil
 	}
 	if content == "" {
 		return "", nil
 	}
-	return markdownToHTML(content), nil
+	return markdownToHTML(resolveMentions(content, c)), nil
 }
 
 func appendInlineAttachmentsToContent(content string, paths []string) (string, error) {
