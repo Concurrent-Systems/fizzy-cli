@@ -1,13 +1,14 @@
 module github.com/basecamp/fizzy-cli
 
-go 1.26
+go 1.26.4
 
 require (
 	github.com/basecamp/cli v0.2.1
-	github.com/basecamp/fizzy-sdk/go v0.2.2
+	github.com/basecamp/fizzy-sdk/go v0.2.3
 	github.com/charmbracelet/huh v1.0.0
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/charmbracelet/x/term v0.2.2
+	github.com/hashicorp/go-version v1.9.0
 	github.com/itchyny/gojq v0.12.19
 	github.com/mattn/go-isatty v0.0.22
 	github.com/muesli/termenv v0.16.0

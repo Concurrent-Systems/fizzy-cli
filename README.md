@@ -49,9 +49,21 @@ yay -S fizzy-cli
 ```
 
 **Homebrew (macOS):**
+
+Latest stable Fizzy 3.x is available from the original tap:
+
 ```bash
-brew install basecamp/tap/fizzy
+brew install robzolkos/fizzy-cli/fizzy-cli
 ```
+
+Fizzy 4 release candidates are available from [Releases](https://github.com/basecamp/fizzy-cli/releases).
+
+> [!WARNING]
+> The Basecamp Homebrew tap command is for Fizzy 4 stable once it is released. Release candidates are not published to Homebrew.
+>
+> ```bash
+> brew install --cask basecamp/tap/fizzy
+> ```
 
 **Scoop (Windows):**
 ```bash
@@ -182,6 +194,8 @@ Configuration priority (highest to lowest):
 5. Global config (`~/.config/fizzy/config.yaml` or `~/.fizzy/config.yaml`)
 
 `FIZZY_ACCOUNT` is accepted as a deprecated alias for `FIZZY_PROFILE`.
+
+`FIZZY_NO_UPDATE_NOTIFIER=1` runs commands without update notifications.
 
 Inspect the effective config and precedence:
 
