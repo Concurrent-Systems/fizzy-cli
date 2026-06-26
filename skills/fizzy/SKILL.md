@@ -97,6 +97,10 @@ Want to change something?
 
 ## Quick Reference
 
+> Discovery: run `fizzy commands` (alias `cmds`) for the live command catalog, or
+> `fizzy commands --json` for a structured tree of every command and flag. Use it
+> to confirm a command exists in the installed binary before relying on it.
+
 | Resource | List | Show | Create | Update | Delete | Other |
 |----------|------|------|--------|--------|--------|-------|
 | account | - | `account show` | - | `account settings-update` | - | `account entropy`, `account export-create`, `account export-show EXPORT_ID`, `account join-code-show`, `account join-code-reset`, `account join-code-update` |
@@ -114,6 +118,7 @@ Want to change something?
 | notification | `notification list` | - | - | - | - | `notification tray`, `notification read-all`, `notification settings-show`, `notification settings-update` |
 | pin | `pin list` | - | - | - | - | `card pin NUMBER`, `card unpin NUMBER` |
 | webhook | `webhook list --board ID`, `webhook deliveries --board ID WEBHOOK_ID` | `webhook show ID --board ID` | `webhook create` | `webhook update ID` | `webhook delete ID` | `webhook reactivate ID` |
+| token | `token list` | - | `token create --description NAME --permission PERM` | - | `token delete ID` | personal access tokens (see Tokens) |
 
 ---
 
@@ -801,6 +806,27 @@ fizzy account join-code-show                           # Show join code
 fizzy account join-code-reset                          # Reset join code
 fizzy account join-code-update --usage-limit N         # Update join code limit
 ```
+
+### Tokens (Personal Access Tokens)
+
+Personal access tokens are the credentials the CLI authenticates with. Most users
+never touch these — the token saved by `fizzy setup` / `fizzy auth login` is used
+automatically by every command. Use `fizzy token` to provision a *separate*,
+scoped token for automation (CI, webhooks, another machine, or an agent), or to
+rotate/revoke a compromised one without disturbing your other tokens.
+
+```bash
+fizzy token list                                       # List your personal access tokens (alias: ls)
+fizzy token create --description "CI deploy" --permission write   # Create a token (both flags required)
+fizzy token delete TOKEN_ID                            # Revoke a single token
+```
+
+- `--description` and `--permission` are both **required** on create.
+- `--permission` accepts `write` (known-good); a read-only scope also exists. The
+  token **value is shown once at creation and cannot be retrieved later** — capture
+  it immediately.
+- Prefer a dedicated token per consumer so revoking one (leak, retired machine)
+  doesn't log out everything else.
 
 ### File Uploads
 
