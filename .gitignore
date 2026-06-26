@@ -1,7 +1,6 @@
 # Build artifacts
 bin/
 /fizzy
-/fizzy-fork
 *.exe
 *.exe~
 *.dll
